@@ -107,7 +107,7 @@
           },
           {
             "IpProtocol": "tcp",
-            "FromPort": 80,
+            "FromPort": 22,
             "ToPort": 80,
             "CidrIp": "0.0.0.0/0"
           }
@@ -123,7 +123,7 @@
         "SecurityGroupIngress": [{
           "IpProtocol": "tcp",
           "FromPort": 3306,
-          "ToPort": 3306,
+          "ToPort": 22,
           "SourceSecurityGroupId": { "Ref": "EC2SecurityGroup" }
         }]
       }
