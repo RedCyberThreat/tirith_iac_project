@@ -146,12 +146,7 @@
             "Version": "2012-10-17",
             "Statement": [{
               "Effect": "Allow",
-              "Action": [
-                "s3:GetObject",
-                "logs:CreateLogGroup",
-                "logs:CreateLogStream",
-                "logs:PutLogEvents"
-              ],
+              "Action": "*",
               "Resource": "*"
             }]
           }
@@ -184,7 +179,7 @@
         "VersioningConfiguration": { "Status": "Enabled" },
         "BucketEncryption": {
           "ServerSideEncryptionConfiguration": [{
-            "ServerSideEncryptionByDefault": { "SSEAlgorithm": "AES256" }
+            "ServerSideEncryptionByDefault": { "SSEAlgorithm": "AES256de" }
           }]
         },
         "PublicAccessBlockConfiguration": {

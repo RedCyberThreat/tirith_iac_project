@@ -7,6 +7,8 @@ with open ('cloudFormation_template.json', 'r') as file:
 list_of_s3_rules = ['BlockPublicAcls', 'IgnorePublicAcls', 'BlockPublicPolicy', 'RestrictPublicBuckets']
 #list of SecurityGroup rules
 list_of_securityGroup_rules = ['FromPort', 'ToPort']
+#list for IAM rules
+list_of_iam_rules = ['Action']
 
 
 #fucntion to search for threats in the S3 buckets settings
@@ -18,12 +20,15 @@ def s3_path(list_of_s3_rules):
     for i in list_of_s3_rules:
         if (value['Properties']['PublicAccessBlockConfiguration'][i]) == False:
             dangerous_rules[i] = "Threat"
+    
+    if (value['Properties']['BucketEncryption']['ServerSideEncryptionConfiguration'][0]['ServerSideEncryptionByDefault']['SSEAlgorithm']) != "AES256":
+        dangerous_rules['ServerSideEncryption'] = 'Threat'
         
     return dangerous_rules
 
 
 
-#function to search for fpor threats in the SecurityGroup settings
+#function to search for for threats in the SecurityGroup settings
 def securityGroup_path(list_of_securityGroup_rules, iter):
     #return dict containing the rules that represent a threat
     dangerous_rules = {}
@@ -35,6 +40,18 @@ def securityGroup_path(list_of_securityGroup_rules, iter):
     
     return dangerous_rules
 
+#fuction to search for threats in the IAM settings
+def iam_path(list_of_iam_rules):
+    #return dict containing the rules that represent a threat
+    dangerous_rules = {}
+    
+    for i in list_of_iam_rules:
+        if (value['Properties']['AssumeRolePolicyDocument']['Statement'][0][i] == '*' or
+            value['Properties']['Policies'][0]['PolicyDocument']['Statement'][0][i] == '*'):
+            
+            dangerous_rules['Actions'] = 'Threat'
+    
+    return dangerous_rules
 
 
 #loop in the uploded json to check for threats
@@ -54,5 +71,9 @@ for key, value in informations.items():
             securityGroup_issues = securityGroup_path(list_of_securityGroup_rules, iteration)
             print(securityGroup_issues)
             iteration += 1
+            
+    if 'IAM::Role' in value['Type']:
+        iam_issues = iam_path(list_of_iam_rules)
+        print(iam_issues)
         
         
