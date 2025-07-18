@@ -36,13 +36,24 @@ def s3_path(list_of_s3_rules, value):
     dangerous_rules = {'Type' : 'S3'}
     
     #loop to check each rule againts the json
-    for i in list_of_s3_rules:
-        if (value['Properties']['PublicAccessBlockConfiguration'][i]) == False:
-            dangerous_rules[i] = severity_evaluation(i)
     
-    path = value['Properties']['BucketEncryption']['ServerSideEncryptionConfiguration'][0]['ServerSideEncryptionByDefault']['SSEAlgorithm']
-    if (path == "AES256" or path == 'aws:kms'):
+    for i in list_of_s3_rules:
+        try:
+            if (value['Properties']['PublicAccessBlockConfiguration'][i]) == False:
+                dangerous_rules[i] = severity_evaluation(i)
+        except KeyError:
+            continue
+    
+    try:
+        path = value['Properties']['BucketEncryption']['ServerSideEncryptionConfiguration'][0]['ServerSideEncryptionByDefault']['SSEAlgorithm']
+        path_2 = value['Properties']['BucketEncryption']['ServerSideEncryptionConfiguration'][0]['ServerSideEncryptionByDefault']['KMSMasterKeyID']
+    except KeyError:
+        path_2 = False
+        
+    if (path == "AES256"):
         return dangerous_rules
+    elif (path == 'aws:kms' and path_2):
+        return dangerous_rules        
     else:
         dangerous_rules['ServerSideEncryption'] = severity_evaluation('ServerSideEncryptionConfiguration')
         
@@ -73,10 +84,13 @@ def iam_path(list_of_iam_rules, value):
     
     #loop inside the list that contain the IAM properties
     for i in list_of_iam_rules:
-        if (value['Properties']['AssumeRolePolicyDocument']['Statement'][0][i] == '*' or
-            value['Properties']['Policies'][0]['PolicyDocument']['Statement'][0][i] == '*'):
-            
-            dangerous_rules['Actions'] = severity_evaluation('*')
+        try:
+            if (value['Properties']['AssumeRolePolicyDocument']['Statement'][0][i] == '*' or
+                value['Properties']['Policies'][0]['PolicyDocument']['Statement'][0][i] == '*'):
+                
+                dangerous_rules['Actions'] = severity_evaluation('*')
+        except KeyError:
+            continue
     
     return dangerous_rules
 
