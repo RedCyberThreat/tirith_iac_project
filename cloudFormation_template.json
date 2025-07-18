@@ -179,7 +179,7 @@
         "VersioningConfiguration": { "Status": "Enabled" },
         "BucketEncryption": {
           "ServerSideEncryptionConfiguration": [{
-            "ServerSideEncryptionByDefault": { "SSEAlgorithm": "AES256de" }
+            "ServerSideEncryptionByDefault": { "SSEAlgorithm": "aws:kmcs" }
           }]
         },
         "PublicAccessBlockConfiguration": {
@@ -202,7 +202,7 @@
         "MasterUserPassword": { "Ref": "DBPassword" },
         "DBName": "SecurityScannerDB",
         "VpcSecurityGroups": [{ "Ref": "RdsSecurityGroup" }],
-        "StorageEncrypted": true,
+        "StorageEncrypted": false,
         "PubliclyAccessible": false,
         "MultiAZ": false,
         "BackupRetentionPeriod": 7,
