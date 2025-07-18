@@ -19,13 +19,13 @@ def severity_evaluation(rule):
     low_severity = {"naming", "tag", "versioning", "backup", "idle", "default", "description"}
 
     rule_lower = rule.lower()
-    # Check for high severity keywords
+    #check for high severity keywords
     if any(keyword in rule_lower for keyword in high_severity):
         return "High"
-    # Check for medium severity keywords
+    #check for medium severity keywords
     if any(keyword in rule_lower for keyword in medium_severity):
         return "Medium"
-    # Check for low severity keywords
+    #check for low severity keywords
     if any(keyword in rule_lower for keyword in low_severity):
         return "Low"
     
@@ -56,8 +56,12 @@ def securityGroup_path(list_of_securityGroup_rules, iter, value):
     
     #loop inside the list that contain the securityGroup properties
     for i in list_of_securityGroup_rules:
-        if(value['Properties']['SecurityGroupIngress'][iter][i]) == (22 or 3389):
-            dangerous_rules[i] = severity_evaluation(i)
+        try:
+            if (value['Properties']['SecurityGroupIngress'][iter][i] in [22, 3389]):
+                if (value['Properties']['SecurityGroupIngress'][iter]["CidrIp"] == "0.0.0.0/0"):
+                    dangerous_rules[i] = severity_evaluation(i)
+        except KeyError:
+            continue     
     
     return dangerous_rules
 
