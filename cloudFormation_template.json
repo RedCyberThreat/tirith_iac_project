@@ -179,7 +179,7 @@
         "VersioningConfiguration": { "Status": "Enabled" },
         "BucketEncryption": {
           "ServerSideEncryptionConfiguration": [{
-            "ServerSideEncryptionByDefault": { "SSEAlgorithm": "aws:kmsd", "KMSMasterKeyID": "12343245" }
+            "ServerSideEncryptionByDefault": { "SSEAlgorithm": "aws:kms", "KMSMasterKeyID": "12343245" }
           }]
         },
         "PublicAccessBlockConfiguration": {
@@ -197,7 +197,7 @@
       "Properties": {
         "AllocatedStorage": 20,
         "DBInstanceClass": "db.t3.micro",
-        "Engine": "mysql",
+        "Engine": "mysqlsfvsdfdfb",
         "MasterUsername": { "Ref": "DBUsername" },
         "MasterUserPassword": { "Ref": "DBPassword" },
         "DBName": "SecurityScannerDB",
