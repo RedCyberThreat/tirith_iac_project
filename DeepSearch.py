@@ -62,13 +62,16 @@ def print_lint_findings(lint_results: list[Match] | None):
         print("No non-syntax issues found. Template is clean.")
         return
 
-    print("\n--- cfn-lint Findings (excluding syntax errors) ---")
+    print("\n--- cfn-lint Findings ---")
     for match in lint_results:
 
         print(f"  Rule: {match.rule.id} ({match.rule.severity})")
         print(f"    Message: {match.message}")
         print(f"    Path: {match.filename}:{match.linenumber}:{match.columnnumber}")
         print(f"    Rule Description: {match.rule.description}")
+        if hasattr(match, 'path') and match.path:
+            resource_path = '/'.join(str(p) for p in match.path)
+            print(f"    Template Path: {resource_path}")
         print("-" * 30)
 
 # --- Main execution ---
