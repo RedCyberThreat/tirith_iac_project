@@ -1,11 +1,10 @@
-import os
-import sys
-import subprocess
 from pathlib import Path
-import json
+import json as j
 
-from cfnlint.api import lint_file, lint, ManualArgs
+from cfnlint.api import lint_file, ManualArgs
 from cfnlint.rules import Match
+
+#to run this code use py 3.13.0
 
 def lint_cloudformation_template_programmatically(template_file_path: str) -> list[Match] | None:
     """
@@ -50,10 +49,10 @@ def lint_cloudformation_template_programmatically(template_file_path: str) -> li
 
 
 def print_lint_findings(lint_results: list[Match] | None):
-    """
-    Prints the linting findings from cfn-lint's Python API.
-    Only prints non-syntax errors and their paths.
-    """
+
+    #function here just for testing
+    #substitute this finction with the one that will create the json file
+
     if lint_results is None:
         print("Linting failed or returned no results due to a critical error.")
         return
@@ -81,19 +80,7 @@ if __name__ == "__main__":
         
     template_file = './cloudFormation_template.json'
 
-    # Check for PyYAML installation (cfn-lint can handle YAML too)
-    try:
-        import yaml
-    except ImportError:
-        print("PyYAML not found. Installing PyYAML...")
-        try:
-            subprocess.check_call([sys.executable, "-m", "pip", "install", "pyyaml"])
-            print("PyYAML installed successfully.")
-        except Exception as e:
-            print(f"Failed to install PyYAML: {e}. You might need to install it manually (e.g., pip install pyyaml).")
-        import yaml 
-
-
+    
     lint_findings = lint_cloudformation_template_programmatically(template_file)
 
     if lint_findings is not None:
