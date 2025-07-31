@@ -47,31 +47,34 @@ def lint_cloudformation_template_programmatically(template_file_path: str) -> li
         traceback.print_exc()
         return None
 
-
-def print_lint_findings(lint_results: list[Match] | None):
-
-    #function here just for testing
-    #substitute this finction with the one that will create the json file
+def generate_lint_findings_dict(lint_results: list[Match]) -> dict:
+    grouped_output = {}
 
     if lint_results is None:
-        print("Linting failed or returned no results due to a critical error.")
-        return
-    if not lint_results:
-        print("\n--- cfn-lint Findings (excluding syntax errors) ---")
-        print("No non-syntax issues found. Template is clean.")
-        return
+        return {"error": "Linting failed or returned no results."}
 
-    print("\n--- cfn-lint Findings ---")
     for match in lint_results:
+        if not match.path or len(match.path) < 2:
+            continue
 
-        print(f"  Rule: {match.rule.id} ({match.rule.severity})")
-        print(f"    Message: {match.message}")
-        print(f"    Path: {match.filename}:{match.linenumber}:{match.columnnumber}")
-        print(f"    Rule Description: {match.rule.description}")
-        if hasattr(match, 'path') and match.path:
-            resource_path = '/'.join(str(p) for p in match.path)
-            print(f"    Template Path: {resource_path}")
-        print("-" * 30)
+        resource_name = str(match.path[0])
+        property_name = str(match.path[1]) if len(match.path) > 1 else "UnknownProperty"
+
+        finding = {
+            "severity": match.rule.severity,
+            "message": match.message,
+            "path": f"{match.filename}:{match.linenumber}:{match.columnnumber}",
+            "rule_description": match.rule.description
+        }
+
+        if resource_name not in grouped_output:
+            grouped_output[resource_name] = {}
+        if property_name not in grouped_output[resource_name]:
+            grouped_output[resource_name][property_name] = []
+
+        grouped_output[resource_name][property_name].append(finding)
+
+    return grouped_output
 
 # --- Main execution ---
 if __name__ == "__main__":
@@ -80,8 +83,20 @@ if __name__ == "__main__":
         
     template_file = './cloudFormation_template.json'
 
-    
+    # Check for PyYAML installation (cfn-lint can handle YAML too)
+    try:
+        import yaml
+    except ImportError:
+        print("PyYAML not found. Installing PyYAML...")
+        try:
+            subprocess.check_call([sys.executable, "-m", "pip", "install", "pyyaml"])
+            print("PyYAML installed successfully.")
+        except Exception as e:
+            print(f"Failed to install PyYAML: {e}. You might need to install it manually (e.g., pip install pyyaml).")
+        import yaml 
+
+
     lint_findings = lint_cloudformation_template_programmatically(template_file)
 
     if lint_findings is not None:
-        print_lint_findings(lint_findings)
+        print(j.dumps(generate_lint_findings_dict(lint_findings), indent=2))        
