@@ -3,10 +3,12 @@ import json as j
 
 from cfnlint.api import lint_file, ManualArgs
 from cfnlint.rules import Match
+from rule_engine import severity_evaluation
+
 
 #to run this code use py 3.13.0
 
-def lint_cloudformation_template_programmatically(template_file_path: str) -> list[Match] | None:
+def lint_cloudformation_template(template_file_path: str):
     """
     Lints a CloudFormation template file using cfn-lint's Python API,
     specifically leveraging the `lint_file` function from `cfnlint.api`.
@@ -24,13 +26,13 @@ def lint_cloudformation_template_programmatically(template_file_path: str) -> li
         print(f"Error: Template file not found at {template_file_path}")
         return []
 
+
     try:
         config_args = ManualArgs(
             regions=["us-east-1"],
-            # You can add other configurations here, e.g.:
-            # ignore_checks=['W2001'], # Example: ignore unused parameter warnings
-            # include_checks=["W", "E"] # Only show Warnings and Errors
+            
         )
+        
 
         matches = lint_file(template_path_obj, config=config_args)
         
@@ -43,11 +45,9 @@ def lint_cloudformation_template_programmatically(template_file_path: str) -> li
 
     except Exception as e:
         print(f"An unexpected error occurred during linting: {e}")
-        import traceback
-        traceback.print_exc()
         return None
 
-def generate_lint_findings_dict(lint_results: list[Match]) -> dict:
+def generate_lint_findings_dict(lint_results: list):
     grouped_output = {}
 
     if lint_results is None:
@@ -58,10 +58,14 @@ def generate_lint_findings_dict(lint_results: list[Match]) -> dict:
             continue
 
         resource_name = str(match.path[0])
-        property_name = str(match.path[1]) if len(match.path) > 1 else "UnknownProperty"
+        
+        if len(match.path) >= 3:
+            property_name = str(match.path[3])
+        else:
+            property_name = "UnknownProperty"
 
         finding = {
-            "severity": match.rule.severity,
+            "severity": severity_evaluation(str(property_name)),
             "message": match.message,
             "path": f"{match.filename}:{match.linenumber}:{match.columnnumber}",
             "rule_description": match.rule.description
@@ -76,27 +80,12 @@ def generate_lint_findings_dict(lint_results: list[Match]) -> dict:
 
     return grouped_output
 
-# --- Main execution ---
+# main execution 
 if __name__ == "__main__":
-    template_file = 'my_cloudFormation_template.json'
-
         
     template_file = './cloudFormation_template.json'
 
-    # Check for PyYAML installation (cfn-lint can handle YAML too)
-    try:
-        import yaml
-    except ImportError:
-        print("PyYAML not found. Installing PyYAML...")
-        try:
-            subprocess.check_call([sys.executable, "-m", "pip", "install", "pyyaml"])
-            print("PyYAML installed successfully.")
-        except Exception as e:
-            print(f"Failed to install PyYAML: {e}. You might need to install it manually (e.g., pip install pyyaml).")
-        import yaml 
-
-
-    lint_findings = lint_cloudformation_template_programmatically(template_file)
+    lint_findings = lint_cloudformation_template(template_file)
 
     if lint_findings is not None:
         print(j.dumps(generate_lint_findings_dict(lint_findings), indent=2))        

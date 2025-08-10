@@ -179,7 +179,7 @@
         "VersioningConfiguration": { "Status": "Enabled" },
         "BucketEncryption": {
           "ServerSideEncryptionConfiguration": [{
-            "ServerSideEncryptionByDefault": { "SSEAlgorithm": "awses:kms", "KMSMasterKeyID": "12343245" }
+            "ServerSideEncryptionByDefault": { "SSEAlgorithm": "awswcet:kms", "KMSMasterKeyID": "1234" }
           }]
         },
         "PublicAccessBlockConfiguration": {
