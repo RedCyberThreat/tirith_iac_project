@@ -1,0 +1,520 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "AWS CloudFormation Template: Secure and Scalable Infrastructure with EC2, S3, IAM, RDS (PostgreSQL), and Security Groups. Follows AWS best practices.",
+
+  "Metadata": {
+    "AWS::CloudFormation::Interface": {
+      "ParameterGroups": [
+        {
+          "Label": { "default": "Project & Environment Configuration" },
+          "Parameters": ["ProjectName", "EnvironmentName"]
+        },
+        {
+          "Label": { "default": "Network Configuration" },
+          "Parameters": ["VpcCidr", "PublicSubnet1Cidr", "PrivateSubnet1Cidr", "PrivateSubnet2Cidr"]
+        },
+        {
+          "Label": { "default": "EC2 Instance Configuration" },
+          "Parameters": ["EC2InstanceType", "KeyPairName", "SSHAllowedCIDR", "WebServerPort"]
+        },
+        {
+          "Label": { "default": "RDS Database Configuration" },
+          "Parameters": ["DBEngine", "DBInstanceClass", "DBAllocatedStorage", "DBName", "DBUsername", "DBPassword", "DBPort"]
+        },
+        {
+          "Label": { "default": "S3 Bucket Configuration" },
+          "Parameters": ["S3BucketNamePrefix"]
+        }
+      ],
+      "ParameterLabels": {
+        "ProjectName": { "default": "Project Name" },
+        "EnvironmentName": { "default": "Environment Name (e.g., dev, prod)" },
+        "VpcCidr": { "default": "VPC CIDR Block" },
+        "PublicSubnet1Cidr": { "default": "Public Subnet 1 CIDR Block" },
+        "PrivateSubnet1Cidr": { "default": "Private Subnet 1 CIDR Block" },
+        "PrivateSubnet2Cidr": { "default": "Private Subnet 2 CIDR Block" },
+        "EC2InstanceType": { "default": "EC2 Instance Type" },
+        "KeyPairName": { "default": "EC2 Key Pair Name for SSH" },
+        "SSHAllowedCIDR": { "default": "CIDR Block Allowed for SSH (e.g., 0.0.0.0/0 for anywhere, or your IP)" },
+        "WebServerPort": { "default": "Web Server Port (e.g., 80 for HTTP, 443 for HTTPS)" },
+        "DBEngine": { "default": "RDS Database Engine" },
+        "DBInstanceClass": { "default": "RDS DB Instance Class" },
+        "DBAllocatedStorage": { "default": "RDS Allocated Storage (GiB)" },
+        "DBName": { "default": "RDS Database Name" },
+        "DBUsername": { "default": "RDS Master Username" },
+        "DBPassword": { "default": "RDS Master Password" },
+        "DBPort": { "default": "RDS Database Port (e.g., 5432 for PostgreSQL, 3306 for MySQL)" },
+        "S3BucketNamePrefix": { "default": "S3 Bucket Name Prefix (e.g., myapp-data)" }
+      }
+    }
+  },
+
+  "Parameters": {
+    "ProjectName": {
+      "Type": "String",
+      "Default": "MySecureApp",
+      "Description": "Name of the project. Used for resource tagging."
+    },
+    "EnvironmentName": {
+      "Type": "String",
+      "Default": "dev",
+      "AllowedValues": ["dev", "test", "prod"],
+      "Description": "Deployment environment (dev, test, prod). Used for resource tagging and naming."
+    },
+    "VpcCidr": {
+      "Type": "String",
+      "Default": "10.0.0.0/16",
+      "Description": "CIDR block for the VPC."
+    },
+    "PublicSubnet1Cidr": {
+      "Type": "String",
+      "Default": "10.0.1.0/24",
+      "Description": "CIDR block for the public subnet in AZ1."
+    },
+    "PrivateSubnet1Cidr": {
+      "Type": "String",
+      "Default": "10.0.2.0/24",
+      "Description": "CIDR block for the private subnet in AZ1 (for RDS/EC2)."
+    },
+    "PrivateSubnet2Cidr": {
+      "Type": "String",
+      "Default": "10.0.3.0/24",
+      "Description": "CIDR block for the private subnet in AZ2 (for RDS Multi-AZ)."
+    },
+    "EC2InstanceType": {
+      "Type": "String",
+      "Default": "t3.micro",
+      "AllowedValues": ["t2.micro", "t2.small", "t3.micro", "t3.small", "m5.large"],
+      "Description": "EC2 instance type for the application server."
+    },
+    "KeyPairName": {
+      "Type": "AWS::EC2::KeyPair::KeyName",
+      "Description": "Name of an existing EC2 KeyPair for SSH access to the EC2 instance."
+    },
+    "SSHAllowedCIDR": {
+      "Type": "String",
+      "Default": "0.0.0.0/0",
+      "Description": "CIDR block allowed to SSH into the EC2 instance (e.g., your public IP)."
+    },
+    "WebServerPort": {
+      "Type": "Number",
+      "Default": "80",
+      "Description": "Port for the web server/application on the EC2 instance (e.g., 80 for HTTP, 443 for HTTPS)."
+    },
+    "DBEngine": {
+      "Type": "String",
+      "Default": "postgres",
+      "AllowedValues": ["mysql", "postgres"],
+      "Description": "Database engine for RDS."
+    },
+    "DBInstanceClass": {
+      "Type": "String",
+      "Default": "db.t3.micro",
+      "AllowedValues": ["db.t3.micro", "db.t3.small", "db.m5.large"],
+      "Description": "DB instance class (size) for the RDS database."
+    },
+    "DBAllocatedStorage": {
+      "Type": "Number",
+      "Default": "20",
+      "MinValue": 5,
+      "Description": "Allocated storage (GiB) for the DB instance."
+    },
+    "DBName": {
+      "Type": "String",
+      "Default": "appdb",
+      "MinLength": "1",
+      "MaxLength": "64",
+      "AllowedPattern": "[a-zA-Z][a-zA-Z0-9]*",
+      "Description": "Name of the database to create."
+    },
+    "DBUsername": {
+      "Type": "String",
+      "Default": "dbadmin",
+      "MinLength": "1",
+      "MaxLength": "16",
+      "AllowedPattern": "[a-zA-Z][a-zA-Z0-9]*",
+      "Description": "Master username for the database instance."
+    },
+    "DBPassword": {
+      "Type": "String",
+      "NoEcho": "true",
+      "MinLength": "8",
+      "MaxLength": "41",
+      "Description": "Master password for the database instance."
+    },
+    "DBPort": {
+      "Type": "Number",
+      "Default": "5432",
+      "Description": "Port number on which the database accepts connections (e.g., 5432 for PostgreSQL, 3306 for MySQL)."
+    },
+    "S3BucketNamePrefix": {
+      "Type": "String",
+      "Default": "my-app-data",
+      "Description": "Prefix for the S3 bucket name. A unique suffix will be added."
+    }
+  },
+
+  "Mappings": {
+    "AWSRegionArch2AMI": {
+      "us-east-1":      { "HVM64": "ami-053b0d53c279acc90" },
+      "us-east-2":      { "HVM64": "ami-0b59bfac6be064f7c" },
+      "us-west-1":      { "HVM64": "ami-0205b385a4325a25e" },
+      "us-west-2":      { "HVM64": "ami-0080f551c20141a7c" },
+      "eu-west-1":      { "HVM64": "ami-09d587c6999a0937c" },
+      "eu-west-2":      { "HVM64": "ami-0a0e36f9011707842" },
+      "eu-central-1":   { "HVM64": "ami-0e06764585149633e" },
+      "ap-southeast-1": { "HVM64": "ami-0d6f28682a628881b" },
+      "ap-southeast-2": { "HVM64": "ami-05187768225574514" },
+      "ap-northeast-1": { "HVM64": "ami-020b0c2688001d9f6" },
+      "ap-northeast-2": { "HVM64": "ami-07971b3e81120286c" },
+      "sa-east-1":      { "HVM64": "ami-0a91e5e0657f2022d" }
+    }
+  },
+
+  "Resources": {
+    "VPC": {
+      "Type": "AWS::EC2::VPC",
+      "Properties": {
+        "CidrBlock": { "Ref": "VpcCidr" },
+        "EnableDnsSupport": true,
+        "EnableDnsHostnames": true,
+        "Tags": [
+          { "Key": "Name", "Value": { "Fn::Sub": "${ProjectName}-${EnvironmentName}-VPC" } },
+          { "Key": "Project", "Value": { "Ref": "ProjectName" } },
+          { "Key": "Environment", "Value": { "Ref": "EnvironmentName" } }
+        ]
+      }
+    },
+
+    "InternetGateway": {
+      "Type": "AWS::EC2::InternetGateway",
+      "Properties": {
+        "Tags": [
+          { "Key": "Name", "Value": { "Fn::Sub": "${ProjectName}-${EnvironmentName}-IGW" } },
+          { "Key": "Project", "Value": { "Ref": "ProjectName" } },
+          { "Key": "Environment", "Value": { "Ref": "EnvironmentName" } }
+        ]
+      }
+    },
+
+    "AttachGateway": {
+      "Type": "AWS::EC2::VPCGatewayAttachment",
+      "Properties": {
+        "VpcId": { "Ref": "VPC" },
+        "InternetGatewayId": { "Ref": "InternetGateway" }
+      }
+    },
+
+    "PublicSubnet1": {
+      "Type": "AWS::EC2::Subnet",
+      "Properties": {
+        "VpcId": { "Ref": "VPC" },
+        "CidrBlock": { "Ref": "PublicSubnet1Cidr" },
+        "MapPublicIpOnLaunch": true,
+        "AvailabilityZone": { "Fn::Select": [0, { "Fn::GetAZs": "" }] },
+        "Tags": [
+          { "Key": "Name", "Value": { "Fn::Sub": "${ProjectName}-${EnvironmentName}-PublicSubnet1" } },
+          { "Key": "Project", "Value": { "Ref": "ProjectName" } },
+          { "Key": "Environment", "Value": { "Ref": "EnvironmentName" } }
+        ]
+      }
+    },
+
+    "PrivateSubnet1": {
+      "Type": "AWS::EC2::Subnet",
+      "Properties": {
+        "VpcId": { "Ref": "VPC" },
+        "CidrBlock": { "Ref": "PrivateSubnet1Cidr" },
+        "MapPublicIpOnLaunch": false,
+        "AvailabilityZone": { "Fn::Select": [0, { "Fn::GetAZs": "" }] },
+        "Tags": [
+          { "Key": "Name", "Value": { "Fn::Sub": "${ProjectName}-${EnvironmentName}-PrivateSubnet1" } },
+          { "Key": "Project", "Value": { "Ref": "ProjectName" } },
+          { "Key": "Environment", "Value": { "Ref": "EnvironmentName" } }
+        ]
+      }
+    },
+
+    "PrivateSubnet2": {
+      "Type": "AWS::EC2::Subnet",
+      "Properties": {
+        "VpcId": { "Ref": "VPC" },
+        "CidrBlock": { "Ref": "PrivateSubnet2Cidr" },
+        "MapPublicIpOnLaunch": false,
+        "AvailabilityZone": { "Fn::Select": [1, { "Fn::GetAZs": "" }] },
+        "Tags": [
+          { "Key": "Name", "Value": { "Fn::Sub": "${ProjectName}-${EnvironmentName}-PrivateSubnet2" } },
+          { "Key": "Project", "Value": { "Ref": "ProjectName" } },
+          { "Key": "Environment", "Value": { "Ref": "EnvironmentName" } }
+        ]
+      }
+    },
+
+    "PublicRouteTable": {
+      "Type": "AWS::EC2::RouteTable",
+      "Properties": {
+        "VpcId": { "Ref": "VPC" },
+        "Tags": [
+          { "Key": "Name", "Value": { "Fn::Sub": "${ProjectName}-${EnvironmentName}-PublicRT" } },
+          { "Key": "Project", "Value": { "Ref": "ProjectName" } },
+          { "Key": "Environment", "Value": { "Ref": "EnvironmentName" } }
+        ]
+      }
+    },
+
+    "PublicRoute": {
+      "Type": "AWS::EC2::Route",
+      "DependsOn": "AttachGateway",
+      "Properties": {
+        "RouteTableId": { "Ref": "PublicRouteTable" },
+        "DestinationCidrBlock": "0.0.0.0/0",
+        "GatewayId": { "Ref": "InternetGateway" }
+      }
+    },
+
+    "PublicSubnetRouteTableAssociation": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties": {
+        "SubnetId": { "Ref": "PublicSubnet1" },
+        "RouteTableId": { "Ref": "PublicRouteTable" }
+      }
+    },
+
+    "EC2SecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Security group for EC2 instance: Allows SSH and Web Server traffic",
+        "VpcId": { "Ref": "VPC" },
+        "SecurityGroupIngress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": 22,
+            "ToPort": 22,
+            "CidrIp": { "Ref": "SSHAllowedCIDR" },
+            "Description": "Allow SSH access from specified CIDR"
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": { "Ref": "WebServerPort" },
+            "ToPort": { "Ref": "WebServerPort" },
+            "CidrIp": "0.0.0.0/0",
+            "Description": "Allow Web Server traffic from anywhere"
+          }
+        ],
+        "Tags": [
+          { "Key": "Name", "Value": { "Fn::Sub": "${ProjectName}-${EnvironmentName}-EC2-SG" } },
+          { "Key": "Project", "Value": { "Ref": "ProjectName" } },
+          { "Key": "Environment", "Value": { "Ref": "EnvironmentName" } }
+        ]
+      }
+    },
+
+    "RDSSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Security group for RDS instance: Allows inbound traffic from EC2 application server(s)",
+        "VpcId": { "Ref": "VPC" },
+        "SecurityGroupIngress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": { "Ref": "DBPort" },
+            "ToPort": { "Ref": "DBPort" },
+            "SourceSecurityGroupId": { "Fn::GetAtt": ["EC2SecurityGroup", "GroupId"] },
+            "Description": "Allow DB access from EC2 application security group"
+          }
+        ],
+        "Tags": [
+          { "Key": "Name", "Value": { "Fn::Sub": "${ProjectName}-${EnvironmentName}-RDS-SG" } },
+          { "Key": "Project", "Value": { "Ref": "ProjectName" } },
+          { "Key": "Environment", "Value": { "Ref": "EnvironmentName" } }
+        ]
+      }
+    },
+
+    "EC2InstanceRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": { "Service": "ec2.amazonaws.com" },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        },
+        "ManagedPolicyArns": [
+          "arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess",
+          "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy"
+        ],
+        "Path": "/",
+        "RoleName": { "Fn::Sub": "${ProjectName}-${EnvironmentName}-EC2Role" },
+        "Description": "IAM Role for EC2 instance with S3 ReadOnly and CloudWatch access."
+      }
+    },
+
+    "EC2InstanceProfile": {
+      "Type": "AWS::IAM::InstanceProfile",
+      "Properties": {
+        "Roles": [{ "Ref": "EC2InstanceRole" }],
+        "InstanceProfileName": { "Fn::Sub": "${ProjectName}-${EnvironmentName}-EC2InstanceProfile" },
+        "Path": "/"
+      },
+      "DependsOn": "EC2InstanceRole"
+    },
+
+    "ApplicationS3Bucket": {
+      "Type": "AWS::S3::Bucket",
+      "Properties": {
+        "BucketName": { "Fn::Sub": "${S3BucketNamePrefix}-${AWS::AccountId}-${AWS::Region}-${EnvironmentName}" },
+        "VersioningConfiguration": {
+          "Status": "Enabled"
+        },
+        "BucketEncryption": {
+          "ServerSideEncryptionConfiguration": [{
+            "ServerSideEncryptionByDefault": { "SSEAlgorithm": "AES256" }
+          }]
+        },
+        "PublicAccessBlockConfiguration": {
+          "BlockPublicAcls": true,
+          "IgnorePublicAcls": true,
+          "BlockPublicPolicy": true,
+          "RestrictPublicBuckets": true
+        },
+        "Tags": [
+          { "Key": "Name", "Value": { "Fn::Sub": "${ProjectName}-${EnvironmentName}-S3Bucket" } },
+          { "Key": "Project", "Value": { "Ref": "ProjectName" } },
+          { "Key": "Environment", "Value": { "Ref": "EnvironmentName" } }
+        ]
+      },
+      "DeletionPolicy": "Retain"
+    },
+
+    "ApplicationEC2Instance": {
+      "Type": "AWS::EC2::Instance",
+      "Properties": {
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            { "Ref": "AWS::Region" },
+            "HVM64"
+          ]
+        },
+        "InstanceType": { "Ref": "EC2InstanceType" },
+        "KeyName": { "Ref": "KeyPairName" },
+        "NetworkInterfaces": [
+          {
+            "DeviceIndex": "0",
+            "AssociatePublicIpAddress": "true",
+            "SubnetId": { "Ref": "PublicSubnet1" },
+            "GroupSet": [{ "Fn::GetAtt": ["EC2SecurityGroup", "GroupId"] }]
+          }
+        ],
+        "IamInstanceProfile": { "Ref": "EC2InstanceProfile" },
+        "UserData": {
+          "Fn::Base64": {
+            "Fn::Sub": [
+              "#!/bin/bash\nyum update -y\nyum install -y httpd\nsystemctl start httpd\nsystemctl enable httpd\necho '<h1>Hello from ${ProjectName} ${EnvironmentName} EC2!</h1>' > /var/www/html/index.html\n",
+              { "ProjectName": { "Ref": "ProjectName" }, "EnvironmentName": { "Ref": "EnvironmentName" } }
+            ]
+          }
+        },
+        "Tags": [
+          { "Key": "Name", "Value": { "Fn::Sub": "${ProjectName}-${EnvironmentName}-WebServer" } },
+          { "Key": "Project", "Value": { "Ref": "ProjectName" } },
+          { "Key": "Environment", "Value": { "Ref": "EnvironmentName" } }
+        ]
+      },
+      "DependsOn": ["EC2SecurityGroup", "EC2InstanceProfile"]
+    },
+
+    "RDSDBSubnetGroup": {
+      "Type": "AWS::RDS::DBSubnetGroup",
+      "Properties": {
+        "DBSubnetGroupDescription": "DB Subnet Group for RDS instance across multiple AZs",
+        "SubnetIds": [
+          { "Ref": "PrivateSubnet1" },
+          { "Ref": "PrivateSubnet2" }
+        ],
+        "Tags": [
+          { "Key": "Name", "Value": { "Fn::Sub": "${ProjectName}-${EnvironmentName}-RDS-SubnetGroup" } },
+          { "Key": "Project", "Value": { "Ref": "ProjectName" } },
+          { "Key": "Environment", "Value": { "Ref": "EnvironmentName" } }
+        ]
+      },
+      "DependsOn": ["PrivateSubnet1", "PrivateSubnet2"]
+    },
+
+    "ApplicationDBInstance": {
+      "Type": "AWS::RDS::DBInstance",
+      "Properties": {
+        "DBInstanceClass": { "Ref": "DBInstanceClass" },
+        "Engine": { "Ref": "DBEngine" },
+        "MasterUsername": { "Ref": "DBUsername" },
+        "MasterUserPassword": { "Ref": "DBPassword" },
+        "AllocatedStorage": { "Ref": "DBAllocatedStorage" },
+        "DBName": { "Ref": "DBName" },
+        "VPCSecurityGroups": [{ "Fn::GetAtt": ["RDSSecurityGroup", "GroupId"] }],
+        "DBSubnetGroupName": { "Ref": "RDSDBSubnetGroup" },
+        "Port": { "Ref": "DBPort" },
+        "PubliclyAccessible": false,
+        "StorageEncrypted": true,
+        "BackupRetentionPeriod": 7,
+        "MultiAZ": true,
+        "Tags": [
+          { "Key": "Name", "Value": { "Fn::Sub": "${ProjectName}-${EnvironmentName}-AppDB" } },
+          { "Key": "Project", "Value": { "Ref": "ProjectName" } },
+          { "Key": "Environment", "Value": { "Ref": "EnvironmentName" } }
+        ]
+      },
+      "DeletionPolicy": "Snapshot",
+      "DependsOn": ["RDSSecurityGroup", "RDSDBSubnetGroup"]
+    }
+  },
+
+  "Outputs": {
+    "VpcId": {
+      "Description": "The ID of the created VPC",
+      "Value": { "Ref": "VPC" },
+      "Export": { "Name": { "Fn::Sub": "${AWS::StackName}-VpcId" } }
+    },
+    "PublicSubnet1Id": {
+      "Description": "The ID of the public subnet in AZ1",
+      "Value": { "Ref": "PublicSubnet1" },
+      "Export": { "Name": { "Fn::Sub": "${AWS::StackName}-PublicSubnet1Id" } }
+    },
+    "PrivateSubnet1Id": {
+      "Description": "The ID of the private subnet in AZ1",
+      "Value": { "Ref": "PrivateSubnet1" },
+      "Export": { "Name": { "Fn::Sub": "${AWS::StackName}-PrivateSubnet1Id" } }
+    },
+    "PrivateSubnet2Id": {
+      "Description": "The ID of the private subnet in AZ2",
+      "Value": { "Ref": "PrivateSubnet2" },
+      "Export": { "Name": { "Fn::Sub": "${AWS::StackName}-PrivateSubnet2Id" } }
+    },
+    "EC2PublicIP": {
+      "Description": "Public IP address of the EC2 instance",
+      "Value": { "Fn::GetAtt": ["ApplicationEC2Instance", "PublicIp"] }
+    },
+    "S3BucketName": {
+      "Description": "Name of the S3 bucket for application data",
+      "Value": { "Ref": "ApplicationS3Bucket" }
+    },
+    "RDSJdbcConnection": {
+      "Description": "JDBC connection string for the RDS database",
+      "Value": {
+        "Fn::Sub": "jdbc:${DBEngine}://${ApplicationDBInstance.Endpoint.Address}:${ApplicationDBInstance.Endpoint.Port}/${DBName}"
+      }
+    },
+    "RDSEndpointAddress": {
+      "Description": "Endpoint address of the RDS database",
+      "Value": { "Fn::GetAtt": ["ApplicationDBInstance", "Endpoint.Address"] }
+    },
+    "RDSEndpointPort": {
+      "Description": "Endpoint port of the RDS database",
+      "Value": { "Fn::GetAtt": ["ApplicationDBInstance", "Endpoint.Port"] }
+    }
+  }
+}
