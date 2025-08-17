@@ -1,22 +1,6 @@
-#function to evaluate the severity of the rule
-def severity_evaluation(rule):
-    high_severity = {"open", "public", "*", "0.0.0.0", "ssh", "rdp", "internet", "admin", "fromport", "toport", "master", "password"}
-    medium_severity = {"encryption", "unencrypted", "policy", "role", "privilege", "logging", "audit", "kms", "encrypted", "group"}
-    low_severity = {"naming", "tag", "versioning", "backup", "idle", "default", "description", "engine"}
-
-    rule_lower = rule.lower()
-    #check for high severity keywords
-    if any(keyword in rule_lower for keyword in high_severity):
-        return "High"
-    #check for medium severity keywords
-    if any(keyword in rule_lower for keyword in medium_severity):
-        return "Medium"
-    #check for low severity keywords
-    if any(keyword in rule_lower for keyword in low_severity):
-        return "Low"
+from utilities import severity_evaluation
     
-    
-#fucntion to search for threats in the S3 buckets settings
+#funcntion to search for threats in the S3 buckets settings
 def s3_check_public_access(list_of_s3_rules, value):
     #return dict containing the rules that represent a threat
     dangerous_rules = {}

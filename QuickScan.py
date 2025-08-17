@@ -7,9 +7,6 @@ from rule_engine import (
     rds_check_dbinstance,
 )
 
-with open ('cloudFormation_template.json', 'r') as file:
-    data = j.load(file)
-
 #list of s3 rules  
 s3_public_access_rules = ['BlockPublicAcls', 'IgnorePublicAcls', 'BlockPublicPolicy', 'RestrictPublicBuckets']
 #list of SecurityGroup rules
@@ -24,11 +21,15 @@ def append_result(result, type_name, all_findings):
             all_findings[type_name] = []
         all_findings[type_name].append(result)
 
-def threat_check():
+def threat_check(data):
     all_findings = {}
     #loop in the uploded json to check for threats
-    Reseurces = data['Resources']
-    for key, value in Reseurces.items():
+    try:
+        reseurces = data['Resources']
+    except KeyError:
+        reseurces = data['Resource']
+        
+    for key, value in reseurces.items():
 
         #checking for S3 threaths
         if 'S3' in value['Type']:
@@ -67,7 +68,5 @@ def threat_check():
                 append_result(result, type_name, all_findings)
 
 
-    return all_findings
+    return j.dumps(all_findings, indent=2)
 
-
-print(j.dumps(threat_check(), indent=2))
