@@ -52,7 +52,7 @@ def generate_deepsearch_result(lint_results: list):
             "severity": severity_evaluation(str(property_name)),
             "message": match.message,
             "path": f"{match.filename}:{match.linenumber}:{match.columnnumber}",
-            "rule_description": match.rule.description
+            "rule_solution": match.rule.description
         }
 
         if resource_name not in grouped_output:

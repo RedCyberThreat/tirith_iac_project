@@ -28,13 +28,12 @@ def threat_check(data):
         reseurces = data['Resources']
     except KeyError:
         reseurces = data['Resource']
-        
     for key, value in reseurces.items():
 
         #checking for S3 threaths
-        if 'S3' in value['Type']:
+        if 'S3' in value.get('Type', ''):
             # checking for AWS:S3:Bucket threaths
-            if 'S3::Bucket' in value['Type']:
+            if 'S3::Bucket' in value.get('Type', ''):
                 result1 = s3_check_public_access(s3_public_access_rules, value)
                 result2 = s3_check_encryption(value)
 
@@ -43,26 +42,26 @@ def threat_check(data):
                     append_result(result, type_name, all_findings)
             
         #checking for EC2 threats
-        if 'EC2' in value['Type']:
+        if 'EC2' in value.get('Type', ''):
             # checking for AWS::EC2::SecurityGroup threaths
-            if 'EC2::SecurityGroup' in value['Type']:
+            if 'EC2::SecurityGroup' in value.get('Type', ''):
                 for i, _ in enumerate(value['Properties'].get('SecurityGroupIngress', [])):
                     result = ec2_check_securitygroups(list_of_securityGroup_rules, i, value)
                     type_name = 'AWS::EC2::SecurityGroup'
                     append_result(result, type_name, all_findings)
                 
         #checking for IAM threats
-        if 'IAM' in value['Type']:
+        if 'IAM' in value.get('Type', ''):
             # checking for AWS::IAM::Role threaths
-            if 'IAM::Role' in value['Type']:
+            if 'IAM::Role' in value.get('Type', ''):
                 result = iam_check_role(list_of_iam_rules, value)
                 type_name = 'AWS::IAM::Role'
                 append_result(result, type_name, all_findings)
 
         #checking for RDS threats
-        if 'RDS' in value['Type']:
+        if 'RDS' in value.get('Type', ''):
             # checking for AWS::RDS::DBInstance threaths
-            if 'RDS::DBInstance' in value['Type']:
+            if 'RDS::DBInstance' in value.get('Type', ''):
                 result = rds_check_dbinstance(list_of_rds_rules, value)
                 type_name = 'AWS::RDS::DBInstance'
                 append_result(result, type_name, all_findings)

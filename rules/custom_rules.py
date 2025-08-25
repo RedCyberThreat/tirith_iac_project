@@ -1,4 +1,3 @@
-# append_rules/custom_security_rules.py
 from cfnlint.rules import CloudFormationLintRule, RuleMatch
 
 class S3PublicAccessBlockRule(CloudFormationLintRule):
@@ -544,6 +543,3 @@ class Ec2SshFromAnywhereRule(CloudFormationLintRule):
                     path = ['Resources', name, 'Properties', 'SecurityGroupIngress', idx]
                     matches.append(RuleMatch(path, f"{name}: Security group allows SSH from the internet"))
         return matches
-    
-    
-    

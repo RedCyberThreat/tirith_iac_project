@@ -317,10 +317,11 @@
         "SecurityGroupIngress": [
           {
             "IpProtocol": "tcp",
-            "FromPort": { "Ref": "DBPort" },
-            "ToPort": { "Ref": "DBPort" },
+            "FromPort": "22",
+            "ToPort": "22",
             "SourceSecurityGroupId": { "Fn::GetAtt": ["EC2SecurityGroup", "GroupId"] },
-            "Description": "Allow DB access from EC2 application security group"
+            "Description": "Allow DB access from EC2 application security group",
+            "CidrIp": "0.0.0.0/0"
           }
         ],
         "Tags": [
@@ -377,9 +378,9 @@
           }]
         },
         "PublicAccessBlockConfiguration": {
-          "BlockPublicAcls": true,
+          "BlockPublicAcls": false,
           "IgnorePublicAcls": true,
-          "BlockPublicPolicy": true,
+          "BlockPublicPolicy": false,
           "RestrictPublicBuckets": true
         },
         "Tags": [
