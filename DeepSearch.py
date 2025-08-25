@@ -8,23 +8,23 @@ from utilities import severity_evaluation
 #to run this code use py 3.13.0
 
 def lint_cloudformation_template(data):
-    
+
     file_path = Path(data)
 
     try:
         config_args = ManualArgs(
             regions=["us-east-1"],
-            
+
         )
-        
+
 
         matches = lint_file(file_path, config=config_args)
-        
+
         filtered_matches = []
         for match in matches:
 
             filtered_matches.append(match)
-            
+
         return filtered_matches
 
     except Exception as e:
@@ -42,7 +42,7 @@ def generate_deepsearch_result(lint_results: list):
             continue
 
         resource_name = str(match.path[0])
-        
+
         if len(match.path) >= 3:
             property_name = str(match.path[3])
         else:
@@ -64,4 +64,4 @@ def generate_deepsearch_result(lint_results: list):
 
     return j.dumps(grouped_output, indent=2)
 
-     
+
