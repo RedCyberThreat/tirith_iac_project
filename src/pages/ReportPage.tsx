@@ -9,50 +9,38 @@ import Footer from "../components/layout/Footer";
 import { FaTimes } from "react-icons/fa";
 
 function ReportPage() {
-  // State to hold the uploaded file object
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
-  // State to manage the visual feedback on drag over
   const [isDragOver, setIsDragOver] = useState(false);
-  // State to manage the selected scan type, defaults to 'deep'
   const [scanType, setScanType] = useState<"quick" | "deep">("deep");
-  // Ref for the hidden file input element
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // This function is called when a file is selected, either by dropping or by clicking
   const handleFileSelected = (file: File | null) => {
     if (file && file.type === "application/json") {
       setUploadedFile(file);
       console.log("File selected:", file);
-      // Future analysis logic will go here
     } else {
-      // You can add more robust error handling here if you like
       alert("Please select a valid JSON file.");
     }
   };
 
-  // Resets the uploaded file state
   const handleRemoveFile = (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.stopPropagation(); // Prevents the file dialog from opening
+    e.stopPropagation();
     setUploadedFile(null);
-    // Also reset the file input value so the same file can be re-uploaded
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
   };
 
-  // Prevents the default browser behavior when a file is dragged over
   const handleDragOver = (e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     setIsDragOver(true);
   };
 
-  // Resets the visual feedback when the dragged file leaves the drop zone
   const handleDragLeave = (e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     setIsDragOver(false);
   };
 
-  // Handles the file drop event
   const handleDrop = (e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     setIsDragOver(false);
@@ -62,12 +50,10 @@ function ReportPage() {
     }
   };
 
-  // Triggers the hidden file input when the drop zone is clicked
   const handleClick = () => {
     fileInputRef.current?.click();
   };
 
-  // Handles the file selection from the file dialog
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files && files.length > 0) {
@@ -75,12 +61,10 @@ function ReportPage() {
     }
   };
 
-  // Truncates long filenames to a more manageable length
   const truncateFileName = (name: string, maxLength: number = 25) => {
     if (name.length <= maxLength) {
       return name;
     }
-    // Keep the start and the end of the filename (including extension)
     const start = name.substring(0, 8);
     const end = name.substring(name.length - 10);
     return `${start}...${end}`;
@@ -96,7 +80,6 @@ function ReportPage() {
       </div>
       <SectionContainer title="Upload File">
         <div className="flex gap-4">
-          {/* Hidden File Input */}
           <input
             type="file"
             ref={fileInputRef}
@@ -104,16 +87,14 @@ function ReportPage() {
             accept="application/json"
             className="hidden"
           />
-          {/* Drop Zone */}
           <JaggedBox
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
             onClick={handleClick}
-            className="w-[600px] h-[200px] cursor-pointer" // Flex properties removed
+            className="w-[600px] h-[200px] cursor-pointer"
             innerClassName={isDragOver ? "bg-tertiary-red/50" : ""}
           >
-            {/* Flex properties moved to this inner wrapper div */}
             <div className="relative flex flex-col h-full text-center justify-center items-center">
               {uploadedFile && (
                 <button
@@ -137,9 +118,7 @@ function ReportPage() {
             </div>
           </JaggedBox>
 
-          {/* Right side panel with File Info and Scan Type */}
           <div className="flex flex-col w-[250px] gap-1.5">
-            {/* File Info Section */}
             <JaggedBox className="text-center">
               <p className="p-4 font-orbitron font-bold text-primary-blue truncate">
                 {uploadedFile ? uploadedFile.name : "No file selected"}
@@ -153,7 +132,6 @@ function ReportPage() {
               </p>
             </JaggedBox>
 
-            {/* Scan Type Selector */}
             <div className="flex-grow flex items-end">
               <div className="flex w-full gap-1.5">
                 <div
@@ -202,7 +180,6 @@ function ReportPage() {
         </div>
       </SectionContainer>
 
-      {/* Conditionally render the Analysis Results and Footer */}
       {uploadedFile && (
         <>
           <SectionContainer title="Analysis Results">
