@@ -6,7 +6,6 @@ import type { QuickScanResponse, DeepSearchResponse } from "../types/scan";
 
 // Import the JSON files directly. Vite will handle the rest.
 import template1 from "../../cloudFormation_template.json";
-import template2 from "../../cloudFormation_template_2.json";
 import template3 from "../../cloudFormation_template_3.json";
 
 export default function TestPage() {

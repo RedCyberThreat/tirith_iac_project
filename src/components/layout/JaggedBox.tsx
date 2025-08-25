@@ -1,12 +1,21 @@
 import React from "react";
 
-interface JaggedBoxProps {
+// The props interface now includes 'innerClassName' and extends standard HTML div attributes
+// to allow passing event handlers like onClick, onDragOver, etc.
+interface JaggedBoxProps extends React.HTMLAttributes<HTMLDivElement> {
   children: React.ReactNode;
   className?: string;
   type?: string;
+  innerClassName?: string; // This new prop is for styling the inner background
 }
 
-function JaggedBox({ children, className = "", type }: JaggedBoxProps) {
+function JaggedBox({
+  children,
+  className = "",
+  type,
+  innerClassName, // Destructure the new prop
+  ...props // Capture any other passed props (like event handlers)
+}: JaggedBoxProps) {
   const cutSize = "22px";
   const borderWidth = "2px";
   const diagonalInset = `calc(${borderWidth} * 0.75)`;
@@ -28,7 +37,9 @@ function JaggedBox({ children, className = "", type }: JaggedBoxProps) {
   )`;
 
   return (
-    <div className={`grid ${className}`}>
+    // Spread the captured props onto the main grid container.
+    // This makes the component accept event handlers.
+    <div className={`grid ${className}`} {...props}>
       <div
         className={`${
           type === "lighter" ? "bg-[#652821]" : "bg-tertiary-red"
@@ -36,7 +47,9 @@ function JaggedBox({ children, className = "", type }: JaggedBoxProps) {
         style={{ clipPath: outerClipPath }}
       ></div>
       <div
-        className="bg-lighter-black [grid-area:1/1]"
+        // The inner background now uses 'innerClassName'. If it's not provided,
+        // it falls back to the default 'bg-lighter-black'.
+        className={`[grid-area:1/1] ${innerClassName || "bg-lighter-black"}`}
         style={{ clipPath: innerClipPath }}
       ></div>
       <div className="relative [grid-area:1/1]">{children}</div>
