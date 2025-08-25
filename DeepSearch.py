@@ -43,7 +43,7 @@ def generate_deepsearch_result(lint_results: list):
 
         resource_name = str(match.path[0])
         
-        if len(match.path) >= 3:
+        if len(match.path) >= 4:
             property_name = str(match.path[3])
         else:
             property_name = "UnknownProperty"

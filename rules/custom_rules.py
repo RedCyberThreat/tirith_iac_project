@@ -1,6 +1,6 @@
 from cfnlint.rules import CloudFormationLintRule, RuleMatch
 
-class S3PublicAccessBlockRule(CloudFormationLintRule):
+class CustomS3PublicAccessBlockRule(CloudFormationLintRule):
     id = 'E01'
     shortdesc = 'S3 public access block booleans must be true'
     description = 'Detect S3 PublicAccessBlockConfiguration keys set to False'
@@ -27,7 +27,7 @@ class S3PublicAccessBlockRule(CloudFormationLintRule):
         return matches
 
 
-class S3BucketEncryptionRule(CloudFormationLintRule):
+class CustomS3BucketEncryptionRule(CloudFormationLintRule):
     id = 'E02'
     shortdesc = 'S3 buckets should have server-side encryption'
     description = 'Checks that S3 BucketEncryption uses AES256 or aws:kms, if aws:kms is set, check that the keys has been initialized'
@@ -55,7 +55,7 @@ class S3BucketEncryptionRule(CloudFormationLintRule):
         return matches
 
 
-class IamWildcardActionRule(CloudFormationLintRule):
+class CustomIamWildcardActionRule(CloudFormationLintRule):
     id = 'E03'
     shortdesc = 'IAM policies should not use wildcard action'
     description = 'Detects Action: * wildcard or similar in policies'
@@ -92,7 +92,7 @@ class IamWildcardActionRule(CloudFormationLintRule):
         return matches
 
 
-class SecurityGroupOpenToWorldRule(CloudFormationLintRule):
+class CustomSecurityGroupOpenToWorldRule(CloudFormationLintRule):
     id = 'E04'
     shortdesc = 'SecurityGroup opens SSH/RDP or all ports to 0.0.0.0/0'
     description = 'Detects SecurityGroup ingress/egress entries open to 0.0.0.0/0 on ports 22 or 3389 or all ports'
@@ -135,7 +135,7 @@ class SecurityGroupOpenToWorldRule(CloudFormationLintRule):
         return matches
 
 
-class RdsStorageEncryptedRule(CloudFormationLintRule):
+class CustomRdsStorageEncryptedRule(CloudFormationLintRule):
     id = 'E05'
     shortdesc = 'RDS StorageEncrypted must be true'
     description = 'Check DBInstance and DBCluster StorageEncrypted property'
@@ -154,7 +154,7 @@ class RdsStorageEncryptedRule(CloudFormationLintRule):
     
     
 #new rules
-class S3BucketVersioningRule(CloudFormationLintRule):
+class CustomS3BucketVersioningRule(CloudFormationLintRule):
     id = 'E06'
     shortdesc = 'S3 buckets should have versioning enabled'
     description = 'Check if an S3 bucket has versioning configured and enabled'
@@ -170,7 +170,7 @@ class S3BucketVersioningRule(CloudFormationLintRule):
                 matches.append(RuleMatch(path, f"{name}: S3 bucket versioning is not enabled"))
         return matches
 
-class S3BucketAccessLoggingRule(CloudFormationLintRule):
+class CustomS3BucketAccessLoggingRule(CloudFormationLintRule):
     id = 'E07'
     shortdesc = 'S3 buckets should have access logging enabled'
     description = 'Check if an S3 bucket has access logging enabled'
@@ -186,7 +186,7 @@ class S3BucketAccessLoggingRule(CloudFormationLintRule):
                 matches.append(RuleMatch(path, f"{name}: S3 bucket access logging is not configured"))
         return matches
 
-class EC2InstanceNoPublicIpRule(CloudFormationLintRule):
+class CustomEC2InstanceNoPublicIpRule(CloudFormationLintRule):
     id = 'E08'
     shortdesc = 'EC2 instances should not have public IPs'
     description = 'EC2 instances with a public IP assigned during launch'
@@ -202,7 +202,7 @@ class EC2InstanceNoPublicIpRule(CloudFormationLintRule):
                 matches.append(RuleMatch(path, f"{name}: EC2 instance should not have a public IP address"))
         return matches
 
-class LambdaVpcConfigRule(CloudFormationLintRule):
+class CustomLambdaVpcConfigRule(CloudFormationLintRule):
     id = 'W09'
     shortdesc = 'Lambda functions should be in a VPC for sensitive workloads'
     description = 'Check if a Lambda function is not configured to run in a VPC'
@@ -218,7 +218,7 @@ class LambdaVpcConfigRule(CloudFormationLintRule):
                 matches.append(RuleMatch(path, f"{name}: Lambda function is not configured for a VPC"))
         return matches
 
-class RDSMultiAzRule(CloudFormationLintRule):
+class CustomRDSMultiAzRule(CloudFormationLintRule):
     id = 'W10'
     shortdesc = 'RDS instances should use Multi-AZ for high availability'
     description = 'Check if an RDS DBInstance is not configured for Multi-AZ'
@@ -234,7 +234,7 @@ class RDSMultiAzRule(CloudFormationLintRule):
                 matches.append(RuleMatch(path, f"{name}: RDS DBInstance should be Multi-AZ for high availability"))
         return matches
 
-class CloudFrontHttpsOnlyRule(CloudFormationLintRule):
+class CustomCloudFrontHttpsOnlyRule(CloudFormationLintRule):
     id = 'E11'
     shortdesc = 'CloudFront distributions should use HTTPS-only'
     description = 'Check if CloudFront distribution viewer protocol policy is not set to redirect to HTTPS'
@@ -253,7 +253,7 @@ class CloudFrontHttpsOnlyRule(CloudFormationLintRule):
                 matches.append(RuleMatch(path, f"{name}: CloudFront viewer policy is not set to redirect to HTTPS"))
         return matches
 
-class CloudWatchLogRetentionRule(CloudFormationLintRule):
+class CustomCloudWatchLogRetentionRule(CloudFormationLintRule):
     id = 'W12'
     shortdesc = 'CloudWatch Log Group retention period should be set'
     description = 'Check if a CloudWatch Log Group has no retention period defined'
@@ -269,7 +269,7 @@ class CloudWatchLogRetentionRule(CloudFormationLintRule):
                 matches.append(RuleMatch(path, f"{name}: CloudWatch Log Group should have a retention period set"))
         return matches
 
-class VpcFlowLogsEnabledRule(CloudFormationLintRule):
+class CustomVpcFlowLogsEnabledRule(CloudFormationLintRule):
     id = 'W13'
     shortdesc = 'VPC Flow Logs should be enabled'
     description = 'Check if VPC Flow Logs are not enabled for a VPC'
@@ -290,7 +290,7 @@ class VpcFlowLogsEnabledRule(CloudFormationLintRule):
         return matches
 
 
-class LambdaEnvVarEncryptionRule(CloudFormationLintRule):
+class CustomLambdaEnvVarEncryptionRule(CloudFormationLintRule):
     id = 'W16'
     shortdesc = 'Lambda environment variables should not contain secrets'
     description = 'Check if Lambda function environment variables are potentially sensitive'
@@ -308,7 +308,7 @@ class LambdaEnvVarEncryptionRule(CloudFormationLintRule):
                     matches.append(RuleMatch(path, f"{name}: Lambda environment variable '{var_name}' may contain a secret"))
         return matches
 
-class EC2TaggingEnforcedRule(CloudFormationLintRule):
+class CustomEC2TaggingEnforcedRule(CloudFormationLintRule):
     id = 'W17'
     shortdesc = 'EC2 instances should have a Name tag'
     description = 'Check if an EC2 instance is missing a Name tag'
@@ -324,7 +324,7 @@ class EC2TaggingEnforcedRule(CloudFormationLintRule):
                 matches.append(RuleMatch(path, f"{name}: EC2 instance is missing a 'Name' tag"))
         return matches
 
-class EbsEncryptionEnabledRule(CloudFormationLintRule):
+class CustomEbsEncryptionEnabledRule(CloudFormationLintRule):
     id = 'E18'
     shortdesc = 'EBS volumes must be encrypted'
     description = 'Checks if an EBS volume has encryption enabled'
@@ -340,7 +340,7 @@ class EbsEncryptionEnabledRule(CloudFormationLintRule):
                 matches.append(RuleMatch(path, f"{name}: EBS volume is not encrypted"))
         return matches
 
-class ECRImageScanningRule(CloudFormationLintRule):
+class CustomECRImageScanningRule(CloudFormationLintRule):
     id = 'W19'
     shortdesc = 'ECR repositories should have image scanning enabled'
     description = 'Check if an ECR repository is not configured for image scanning on push'
@@ -357,7 +357,7 @@ class ECRImageScanningRule(CloudFormationLintRule):
                 matches.append(RuleMatch(path, f"{name}: ECR repository does not have image scanning enabled"))
         return matches
 
-class RdsDeletionProtectionRule(CloudFormationLintRule):
+class CustomRdsDeletionProtectionRule(CloudFormationLintRule):
     id = 'W20'
     shortdesc = 'RDS instances should have deletion protection enabled'
     description = 'Check if an RDS DBInstance is not configured with deletion protection'
@@ -373,7 +373,7 @@ class RdsDeletionProtectionRule(CloudFormationLintRule):
                 matches.append(RuleMatch(path, f"{name}: RDS DBInstance deletion protection is not enabled"))
         return matches
 
-class IamUserNoInlinePolicies(CloudFormationLintRule):
+class CustomIamUserNoInlinePolicies(CloudFormationLintRule):
     id = 'W21'
     shortdesc = 'IAM users should not have inline policies'
     description = 'Use managed policies over inline policies for IAM users'
@@ -389,7 +389,7 @@ class IamUserNoInlinePolicies(CloudFormationLintRule):
                 matches.append(RuleMatch(path, f"{name}: IAM user should not have inline policies"))
         return matches
 
-class SnsTopicPolicyEnforcedRule(CloudFormationLintRule):
+class CustomSnsTopicPolicyEnforcedRule(CloudFormationLintRule):
     id = 'E22'
     shortdesc = 'SNS topic policies should restrict access'
     description = 'Check for an SNS topic policy that is overly permissive'
@@ -411,7 +411,7 @@ class SnsTopicPolicyEnforcedRule(CloudFormationLintRule):
             self._check_policy(policy_doc, ['Resources', name, 'Properties', 'PolicyDocument'], matches, name)
         return matches
 
-class WafEnabledOnCloudFront(CloudFormationLintRule):
+class CustomWafEnabledOnCloudFront(CloudFormationLintRule):
     id = 'W23'
     shortdesc = 'CloudFront distributions should use a WAF WebACL'
     description = 'Control if a CloudFront distribution is not associated with a WebACLId'
@@ -428,7 +428,7 @@ class WafEnabledOnCloudFront(CloudFormationLintRule):
                 matches.append(RuleMatch(path, f"{name}: CloudFront distribution should have a WAF WebACL configured"))
         return matches
 
-class CloudTrailEncryptionRule(CloudFormationLintRule):
+class CustomCloudTrailEncryptionRule(CloudFormationLintRule):
     id = 'E24'
     shortdesc = 'CloudTrail logs should be encrypted with KMS'
     description = 'Check if a CloudTrail trail is configured with a KMS key ID for encryption'
@@ -444,7 +444,7 @@ class CloudTrailEncryptionRule(CloudFormationLintRule):
                 matches.append(RuleMatch(path, f"{name}: CloudTrail logs should be encrypted with a KMS key"))
         return matches
 
-class SecretsManagerRotationRule(CloudFormationLintRule):
+class CustomSecretsManagerRotationRule(CloudFormationLintRule):
     id = 'W25'
     shortdesc = 'Secrets Manager secrets should have rotation enabled'
     description = 'An AWS Secrets Manager secret is not configured for rotation'
@@ -460,7 +460,7 @@ class SecretsManagerRotationRule(CloudFormationLintRule):
                 matches.append(RuleMatch(path, f"{name}: Secrets Manager secret should have rotation enabled"))
         return matches
 
-class S3PublicReadWriteACLRule(CloudFormationLintRule):
+class CustomS3PublicReadWriteACLRule(CloudFormationLintRule):
     id = 'E26'
     shortdesc = 'S3 buckets should not have public read/write ACLs'
     description = 'Check S3 buckets with ACLs that allow public read or write access'
@@ -477,7 +477,7 @@ class S3PublicReadWriteACLRule(CloudFormationLintRule):
         return matches
 
 
-class ApiGatewayCachingEnabledRule(CloudFormationLintRule):
+class CustomApiGatewayCachingEnabledRule(CloudFormationLintRule):
     id = 'W28'
     shortdesc = 'API Gateway stages should have caching enabled'
     description = 'Check if an API Gateway Stage is not configured with caching'
@@ -492,7 +492,7 @@ class ApiGatewayCachingEnabledRule(CloudFormationLintRule):
                 matches.append(RuleMatch(path, f"{name}: API Gateway stage should have caching enabled"))
         return matches
 
-class DynamoDbEncryptionRule(CloudFormationLintRule):
+class CustomDynamoDbEncryptionRule(CloudFormationLintRule):
     id = 'E29'
     shortdesc = 'DynamoDB tables should be encrypted'
     description = 'Check if a DynamoDB table has server-side encryption enabled'
@@ -508,7 +508,7 @@ class DynamoDbEncryptionRule(CloudFormationLintRule):
                 matches.append(RuleMatch(path, f"{name}: DynamoDB table should have server-side encryption enabled"))
         return matches
 
-class IamPolicyAttachedToGroupRule(CloudFormationLintRule):
+class CustomIamPolicyAttachedToGroupRule(CloudFormationLintRule):
     id = 'W30'
     shortdesc = 'IAM policies should be attached to groups, not users'
     description = 'Attaching IAM policies to groups instead of individual users'
@@ -524,7 +524,7 @@ class IamPolicyAttachedToGroupRule(CloudFormationLintRule):
                 matches.append(RuleMatch(path, f"{name}: IAM policies should be attached to groups, not users"))
         return matches
 
-class Ec2SshFromAnywhereRule(CloudFormationLintRule):
+class CustomEc2SshFromAnywhereRule(CloudFormationLintRule):
     id = 'E31'
     shortdesc = 'Security groups should not allow SSH from 0.0.0.0/0'
     description = 'Check security group ingress rules for port 22 open to the world'
@@ -536,7 +536,7 @@ class Ec2SshFromAnywhereRule(CloudFormationLintRule):
             props = res.get('Properties', {}) or {}
             ingress_rules = props.get('SecurityGroupIngress') or []
             for idx, rule in enumerate(ingress_rules):
-                from_port = rule.get('FromPort')
+                from_port = rule.get('Fromport')
                 to_port = rule.get('ToPort')
                 cidr_ip = rule.get('CidrIp')
                 if cidr_ip in ('0.0.0.0/0', '::/0') and (from_port is not None and to_port is not None and from_port <= 22 <= to_port):
