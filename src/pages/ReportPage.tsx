@@ -1,3 +1,4 @@
+import { useState, type DragEvent } from "react";
 import "../App.css";
 import { Link } from "react-router-dom";
 import Header from "../components/layout/Header";
@@ -7,6 +8,37 @@ import VulnerabilityItem from "../components/layout/VulnerabilityItem";
 import Footer from "../components/layout/Footer";
 
 function ReportPage() {
+  // State to hold the uploaded file object
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  // State to manage the visual feedback on drag over
+  const [isDragOver, setIsDragOver] = useState(false);
+
+  // Prevents the default behavior of the browser when a file is dragged over
+  const handleDragOver = (e: DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDragOver(true);
+  };
+
+  // Resets the visual feedback when the dragged file leaves the drop zone
+  const handleDragLeave = (e: DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDragOver(false);
+  };
+
+  // Handles the file drop event
+  const handleDrop = (e: DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDragOver(false);
+    // Get the dropped files from the event
+    const files = e.dataTransfer.files;
+    // If there's at least one file, set the first one to state
+    if (files && files.length > 0) {
+      setUploadedFile(files[0]);
+      // Here you would typically trigger the file analysis
+      console.log("File dropped:", files[0]);
+    }
+  };
+
   return (
     <>
       <Header />
@@ -17,83 +49,105 @@ function ReportPage() {
       </div>
       <SectionContainer title="Upload File">
         <div className="flex gap-4">
-          <JaggedBox className="flex flex-col w-[600px] text-center">
-            <p className="p-22 pt-23 font-orbitron text-4xl font-bold uppercase text-quaternary-red">
-              drop the file.
-            </p>
+          {/* Drop Zone */}
+          <JaggedBox>
+            <div
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+              className={`transition-colors duration-300 ${
+                isDragOver ? "bg-tertiary-red/50" : ""
+              }`}
+            >
+              <JaggedBox className="flex flex-col w-[600px] h-[200px] text-center justify-center items-center cursor-pointer">
+                <p className="p-4 font-orbitron text-4xl font-bold uppercase text-quaternary-red">
+                  {uploadedFile ? uploadedFile.name : "drop the file."}
+                </p>
+                {uploadedFile && (
+                  <p className="mt-2 text-sm text-primary-blue font-orbitron font-bold tracking-wider">
+                    File loaded. Analysis will begin shortly.
+                  </p>
+                )}
+              </JaggedBox>
+            </div>
           </JaggedBox>
+
+          {/* File Info Section */}
           <div className="flex w-[250px] flex-col gap-1.5">
             <JaggedBox className="text-center">
-              <p className="p-4.5 font-orbitron font-bold text-primary-blue">
-                File Type
+              <p className="p-4 font-orbitron font-bold text-primary-blue truncate">
+                {uploadedFile ? uploadedFile.name : "No file selected"}
               </p>
             </JaggedBox>
             <JaggedBox className="text-center">
-              <p className="p-4.5 font-orbitron font-bold text-primary-blue">
-                File Type
-              </p>
-            </JaggedBox>
-            <JaggedBox className="text-center">
-              <p className="p-4.5 font-orbitron font-bold text-primary-blue">
-                File Type
+              <p className="p-4 font-orbitron font-bold text-primary-blue">
+                {uploadedFile
+                  ? `${(uploadedFile.size / 1024).toFixed(2)} KB`
+                  : "File Size"}
               </p>
             </JaggedBox>
           </div>
         </div>
       </SectionContainer>
-      <SectionContainer title="Analysis Results">
-        <div className="flex gap-24 items-center justify-center">
-          <div className="border-2 border-tertiary-red w-[250px] h-[250px] flex items-center justify-center bg-lighter-black">
-            <div className="relative w-[225px] h-[225px] rounded-full bg-quaternary-red"></div>
-            <div className="absolute w-[180px] h-[180px] rounded-full bg-lighter-black text-quaternary-red font-rajdhani flex items-center justify-center">
-              <p className="text-5xl font-bold text-center leading-6">
-                5<br />
-                <span className="text-4xl ">/5</span>
-              </p>
-              <div
-                id="point-circle"
-                className="h-4 w-4 rounded-full bg-secondary-red absolute bottom-35 left-41"
-              ></div>
-              <div
-                id="point-line1"
-                className="h-0.5 w-6 bg-secondary-red absolute bottom-39 left-43 -rotate-42"
-              ></div>
-              <div
-                id="point-line2"
-                className="h-0.5 w-36 z-2 bg-secondary-red absolute bottom-[162.9px] left-48 "
-              ></div>
+
+      {/* Conditionally render the Analysis Results and Footer */}
+      {uploadedFile && (
+        <>
+          <SectionContainer title="Analysis Results">
+            <div className="flex gap-24 items-center justify-center">
+              <div className="border-2 border-tertiary-red w-[250px] h-[250px] flex items-center justify-center bg-lighter-black">
+                <div className="relative w-[225px] h-[225px] rounded-full bg-quaternary-red"></div>
+                <div className="absolute w-[180px] h-[180px] rounded-full bg-lighter-black text-quaternary-red font-rajdhani flex items-center justify-center">
+                  <p className="text-5xl font-bold text-center leading-6">
+                    5<br />
+                    <span className="text-4xl ">/5</span>
+                  </p>
+                  <div
+                    id="point-circle"
+                    className="h-4 w-4 rounded-full bg-secondary-red absolute bottom-35 left-41"
+                  ></div>
+                  <div
+                    id="point-line1"
+                    className="h-0.5 w-6 bg-secondary-red absolute bottom-39 left-43 -rotate-42"
+                  ></div>
+                  <div
+                    id="point-line2"
+                    className="h-0.5 w-36 z-2 bg-secondary-red absolute bottom-[162.9px] left-48 "
+                  ></div>
+                </div>
+              </div>
+              <JaggedBox className="h-[250px] w-[600px] font-orbitron text-sm font-bold text-quaternary-red">
+                <p className="p-4 py-18 text-justify">
+                  Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+                  Curabitur sem augue, placerat hendrerit aliquam in, rhoncus et
+                  ipsum. Aenean a est urna. Sed vel ex accumsan, aliquam tellus
+                  viverra, eleifend nisl. Sed viverra bibendum tortor. Proin
+                  imperdiet mauris vel nulla lacinia, et gravida est porttitor.
+                  Nunc id malesuada tellus. Nullam et arcu ligula.
+                </p>
+              </JaggedBox>
             </div>
-          </div>
-          <JaggedBox className="h-[250px] w-[600px] font-orbitron text-sm font-bold text-quaternary-red">
-            <p className="p-4 py-18 text-justify">
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur
-              sem augue, placerat hendrerit aliquam in, rhoncus et ipsum. Aenean
-              a est urna. Sed vel ex accumsan, aliquam tellus viverra, eleifend
-              nisl. Sed viverra bibendum tortor. Proin imperdiet mauris vel
-              nulla lacinia, et gravida est porttitor. Nunc id malesuada tellus.
-              Nullam et arcu ligula.
-            </p>
-          </JaggedBox>
-        </div>
-        <div className="flex mt-6 font-rajdhani text-primary-blue mb-4 gap-4 ml-16 -mr-8">
-          <div className="w-[20.9%] text-3xl border-tertiary-red border-2 leading-none pt-0.5 font-light">
-            Rule
-          </div>
-          <div className="w-[20.9%] text-3xl border-tertiary-red border-2 leading-none pt-0.5 font-light ml-1">
-            Description
-          </div>
-          <div className="w-[20.8%] text-3xl border-tertiary-red border-2 leading-none pt-0.5 font-light ml-1">
-            Line
-          </div>
-          <div className="w-[33.2%] text-3xl border-tertiary-red border-2 leading-none pt-0.5 font-light">
-            Recommendations
-          </div>
-        </div>
-        <VulnerabilityItem />
-        <VulnerabilityItem />
-        <VulnerabilityItem />
-      </SectionContainer>
-      <Footer />
+            <div className="flex mt-6 font-rajdhani text-primary-blue mb-4 gap-4 ml-16 -mr-8">
+              <div className="w-[20.9%] text-3xl border-tertiary-red border-2 leading-none pt-0.5 font-light">
+                Rule
+              </div>
+              <div className="w-[20.9%] text-3xl border-tertiary-red border-2 leading-none pt-0.5 font-light ml-1">
+                Description
+              </div>
+              <div className="w-[20.8%] text-3xl border-tertiary-red border-2 leading-none pt-0.5 font-light ml-1">
+                Line
+              </div>
+              <div className="w-[33.2%] text-3xl border-tertiary-red border-2 leading-none pt-0.5 font-light">
+                Recommendations
+              </div>
+            </div>
+            <VulnerabilityItem />
+            <VulnerabilityItem />
+            <VulnerabilityItem />
+          </SectionContainer>
+          <Footer />
+        </>
+      )}
     </>
   );
 }
