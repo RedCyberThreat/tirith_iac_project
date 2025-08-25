@@ -6,7 +6,7 @@ export interface DeepFinding {
   severity: "Low" | "Medium" | "High" | null;
   message: string;
   path: string;
-  rule_description: string;
+  rule_solution: string;
 }
 
 export interface DeepSearchResponse {

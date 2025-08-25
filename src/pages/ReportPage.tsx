@@ -8,28 +8,46 @@ import VulnerabilityItem from "../components/layout/VulnerabilityItem";
 import Footer from "../components/layout/Footer";
 import { FaTimes } from "react-icons/fa";
 import { quickScan, deepSearch } from "../api/scan";
-import type { QuickScanResponse, DeepSearchResponse } from "../types/scan";
+import type {
+  QuickScanResponse,
+  DeepSearchResponse,
+  DeepFinding,
+} from "../types/scan";
+
+type ProcessedQuickResult = {
+  resource: string;
+  rule: string;
+  severity: string;
+};
+
+type ProcessedDeepResult = {
+  rule: string;
+  description: string;
+  line: string;
+  recommendation: string;
+  severity: string | null;
+};
+
+type ProcessedResult = ProcessedQuickResult | ProcessedDeepResult;
 
 function ReportPage() {
-  // State to hold the uploaded file object
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
-  // State to manage the visual feedback on drag over
   const [isDragOver, setIsDragOver] = useState(false);
-  // State to manage the selected scan type, defaults to 'deep'
   const [scanType, setScanType] = useState<"quick" | "deep">("deep");
-  // Ref for the hidden file input element
   const fileInputRef = useRef<HTMLInputElement>(null);
-  // State for API call status
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [analysisStatus, setAnalysisStatus] = useState<string | null>(null);
-  // State for the rule and issue counts
   const [totalRules, setTotalRules] = useState(0);
   const [totalIssues, setTotalIssues] = useState(0);
-  // State for the dynamic summary message
   const [summaryMessage, setSummaryMessage] = useState("");
+  const [processedResults, setProcessedResults] = useState<ProcessedResult[]>(
+    []
+  );
+  const [scanResult, setScanResult] = useState<
+    QuickScanResponse | DeepSearchResponse | null
+  >(null);
 
-  // Counts the total number of resources in the uploaded CloudFormation template
   const countTotalRules = (jsonData: any) => {
     if (jsonData && jsonData.Resources) {
       return Object.keys(jsonData.Resources).length;
@@ -37,7 +55,6 @@ function ReportPage() {
     return 0;
   };
 
-  // Counts the total issues found, handling both Quick Scan and Deep Search formats
   const countTotalIssues = (
     scanResult: QuickScanResponse | DeepSearchResponse,
     type: "quick" | "deep"
@@ -61,7 +78,6 @@ function ReportPage() {
     return count;
   };
 
-  // Analyzes scan results to generate a dynamic summary message
   const generateSummary = (
     scanResult: QuickScanResponse | DeepSearchResponse,
     type: "quick" | "deep",
@@ -112,7 +128,6 @@ function ReportPage() {
     return `Your CloudFormation template is considered ${level}. You have ${severityCounts.Low} low issues, ${severityCounts.Medium} medium issues, ${severityCounts.High} high issues, and ${severityCounts.Unclassified} unclassified issues.`;
   };
 
-  // Reads the selected file and triggers the chosen scan
   const handleFileAnalysis = (file: File) => {
     const reader = new FileReader();
     reader.onload = async (event) => {
@@ -131,6 +146,7 @@ function ReportPage() {
         setError(null);
         setTotalIssues(0);
         setSummaryMessage("");
+        setProcessedResults([]);
         setAnalysisStatus(
           `Running ${scanType === "quick" ? "Quick Scan" : "Deep Search"}...`
         );
@@ -138,8 +154,46 @@ function ReportPage() {
         let result;
         if (scanType === "quick") {
           result = await quickScan(jsonData);
+          setScanResult(result);
+          const processed: ProcessedQuickResult[] = [];
+          const quickScanResult = result as QuickScanResponse;
+          for (const resource in quickScanResult) {
+            quickScanResult[resource].forEach((finding) => {
+              for (const rule in finding) {
+                processed.push({
+                  resource,
+                  rule,
+                  severity: finding[rule],
+                });
+              }
+            });
+          }
+          setProcessedResults(processed);
         } else {
           result = await deepSearch(jsonData);
+          setScanResult(result);
+          const processed: ProcessedDeepResult[] = [];
+          const deepScanResult = result as DeepSearchResponse;
+          if (deepScanResult.Resources) {
+            for (const resource in deepScanResult.Resources) {
+              deepScanResult.Resources[resource].forEach(
+                (finding: DeepFinding) => {
+                  const pathParts = finding.path.split(":");
+                  processed.push({
+                    rule: resource,
+                    description: finding.message,
+                    line:
+                      pathParts.length > 1
+                        ? `${pathParts[1]}:${pathParts[2]}`
+                        : finding.path,
+                    recommendation: finding.rule_solution,
+                    severity: finding.severity,
+                  });
+                }
+              );
+            }
+          }
+          setProcessedResults(processed);
         }
 
         const issuesCount = countTotalIssues(result, scanType);
@@ -165,7 +219,6 @@ function ReportPage() {
     reader.readAsText(file);
   };
 
-  // This function is called when a file is selected
   const handleFileSelected = (file: File | null) => {
     if (file && file.type === "application/json") {
       setUploadedFile(file);
@@ -175,7 +228,6 @@ function ReportPage() {
     }
   };
 
-  // Resets the uploaded file and all related states
   const handleRemoveFile = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
     setUploadedFile(null);
@@ -184,12 +236,13 @@ function ReportPage() {
     setTotalRules(0);
     setTotalIssues(0);
     setSummaryMessage("");
+    setProcessedResults([]);
+    setScanResult(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
   };
 
-  // Drag and drop handlers
   const handleDragOver = (e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     setIsDragOver(true);
@@ -209,7 +262,6 @@ function ReportPage() {
     }
   };
 
-  // Click and file change handlers
   const handleClick = () => {
     if (!uploadedFile) {
       fileInputRef.current?.click();
@@ -223,7 +275,6 @@ function ReportPage() {
     }
   };
 
-  // Truncates long filenames
   const truncateFileName = (name: string, maxLength: number = 25) => {
     if (name.length <= maxLength) return name;
     const start = name.substring(0, 8);
@@ -372,23 +423,58 @@ function ReportPage() {
                 <p className="p-4 py-18 text-justify">{summaryMessage}</p>
               </JaggedBox>
             </div>
-            <div className="flex mt-6 font-rajdhani text-primary-blue mb-4 gap-4 ml-16 -mr-8">
-              <div className="w-[20.9%] text-3xl border-tertiary-red border-2 leading-none pt-0.5 font-light">
-                Rule
-              </div>
-              <div className="w-[20.9%] text-3xl border-tertiary-red border-2 leading-none pt-0.5 font-light ml-1">
-                Description
-              </div>
-              <div className="w-[20.8%] text-3xl border-tertiary-red border-2 leading-none pt-0.5 font-light ml-1">
-                Line
-              </div>
-              <div className="w-[33.2%] text-3xl border-tertiary-red border-2 leading-none pt-0.5 font-light">
-                Recommendations
-              </div>
-            </div>
-            <VulnerabilityItem />
-            <VulnerabilityItem />
-            <VulnerabilityItem />
+
+            {scanType === "quick" && scanResult && (
+              <>
+                <div className="flex mt-6 font-rajdhani text-primary-blue mb-4 gap-4 ml-16 -mr-8">
+                  <div className="w-[30%] text-3xl border-tertiary-red border-2 leading-none pt-0.5 font-light text-center">
+                    Rule
+                  </div>
+                  <div className="w-[40%] text-3xl border-tertiary-red border-2 leading-none pt-0.5 font-light text-center">
+                    Resource
+                  </div>
+                  <div className="w-[30%] text-3xl border-tertiary-red border-2 leading-none pt-0.5 font-light text-center">
+                    Severity
+                  </div>
+                </div>
+                {processedResults.map((item, index) => (
+                  <VulnerabilityItem
+                    key={index}
+                    scanType="quick"
+                    {...(item as ProcessedQuickResult)}
+                  />
+                ))}
+              </>
+            )}
+
+            {scanType === "deep" && scanResult && (
+              <>
+                <div className="flex mt-6 font-rajdhani text-primary-blue mb-4 gap-4 ml-16 -mr-8">
+                  <div className="w-[20%] text-3xl border-tertiary-red border-2 leading-none pt-0.5 font-light text-center">
+                    Rule
+                  </div>
+                  <div className="w-[25%] text-3xl border-tertiary-red border-2 leading-none pt-0.5 font-light text-center">
+                    Description
+                  </div>
+                  <div className="w-[15%] text-3xl border-tertiary-red border-2 leading-none pt-0.5 font-light text-center">
+                    Line
+                  </div>
+                  <div className="w-[15%] text-3xl border-tertiary-red border-2 leading-none pt-0.5 font-light text-center">
+                    Severity
+                  </div>
+                  <div className="w-[25%] text-3xl border-tertiary-red border-2 leading-none pt-0.5 font-light text-center">
+                    Recommendations
+                  </div>
+                </div>
+                {processedResults.map((item, index) => (
+                  <VulnerabilityItem
+                    key={index}
+                    scanType="deep"
+                    {...(item as ProcessedDeepResult)}
+                  />
+                ))}
+              </>
+            )}
           </SectionContainer>
           <Footer />
         </>

@@ -28,7 +28,7 @@ export default function DeepSearchResult({ result }: Props) {
                 <br />
                 <span className="text-sm text-gray-500">{f.path}</span>
                 <br />
-                <span className="text-sm italic">{f.rule_description}</span>
+                <span className="text-sm italic">{f.rule_solution}</span>
               </li>
             ))}
           </ul>
