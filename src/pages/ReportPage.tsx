@@ -7,30 +7,189 @@ import SectionContainer from "../components/layout/SectionContainer";
 import VulnerabilityItem from "../components/layout/VulnerabilityItem";
 import Footer from "../components/layout/Footer";
 import { FaTimes } from "react-icons/fa";
+import { quickScan, deepSearch } from "../api/scan";
+import type { QuickScanResponse, DeepSearchResponse } from "../types/scan";
 
 function ReportPage() {
+  // State to hold the uploaded file object
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  // State to manage the visual feedback on drag over
   const [isDragOver, setIsDragOver] = useState(false);
+  // State to manage the selected scan type, defaults to 'deep'
   const [scanType, setScanType] = useState<"quick" | "deep">("deep");
+  // Ref for the hidden file input element
   const fileInputRef = useRef<HTMLInputElement>(null);
+  // State for API call status
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [analysisStatus, setAnalysisStatus] = useState<string | null>(null);
+  // State for the rule and issue counts
+  const [totalRules, setTotalRules] = useState(0);
+  const [totalIssues, setTotalIssues] = useState(0);
+  // State for the dynamic summary message
+  const [summaryMessage, setSummaryMessage] = useState("");
 
+  // Counts the total number of resources in the uploaded CloudFormation template
+  const countTotalRules = (jsonData: any) => {
+    if (jsonData && jsonData.Resources) {
+      return Object.keys(jsonData.Resources).length;
+    }
+    return 0;
+  };
+
+  // Counts the total issues found, handling both Quick Scan and Deep Search formats
+  const countTotalIssues = (
+    scanResult: QuickScanResponse | DeepSearchResponse,
+    type: "quick" | "deep"
+  ) => {
+    let count = 0;
+    if (type === "quick") {
+      const quickScanResult = scanResult as QuickScanResponse;
+      Object.values(quickScanResult).forEach((findingsArray) => {
+        findingsArray.forEach((finding) => {
+          count += Object.keys(finding).length;
+        });
+      });
+    } else {
+      const deepSearchResult = scanResult as DeepSearchResponse;
+      if (deepSearchResult.Resources) {
+        Object.values(deepSearchResult.Resources).forEach((findingsArray) => {
+          count += findingsArray.length;
+        });
+      }
+    }
+    return count;
+  };
+
+  // Analyzes scan results to generate a dynamic summary message
+  const generateSummary = (
+    scanResult: QuickScanResponse | DeepSearchResponse,
+    type: "quick" | "deep",
+    rulesCount: number
+  ) => {
+    const severityCounts = { High: 0, Medium: 0, Low: 0, Unclassified: 0 };
+
+    if (type === "quick") {
+      const quickScanResult = scanResult as QuickScanResponse;
+      Object.values(quickScanResult).forEach((findings) => {
+        findings.forEach((finding) => {
+          Object.values(finding).forEach((severity) => {
+            if (severity === "High") severityCounts.High++;
+            else if (severity === "Medium") severityCounts.Medium++;
+            else if (severity === "Low") severityCounts.Low++;
+            else severityCounts.Unclassified++;
+          });
+        });
+      });
+    } else {
+      const deepSearchResult = scanResult as DeepSearchResponse;
+      if (deepSearchResult.Resources) {
+        Object.values(deepSearchResult.Resources).forEach((findings) => {
+          findings.forEach((finding) => {
+            if (finding.severity === "High") severityCounts.High++;
+            else if (finding.severity === "Medium") severityCounts.Medium++;
+            else if (finding.severity === "Low") severityCounts.Low++;
+            else severityCounts.Unclassified++;
+          });
+        });
+      }
+    }
+
+    const issuesCount =
+      severityCounts.High +
+      severityCounts.Medium +
+      severityCounts.Low +
+      severityCounts.Unclassified;
+    const issueRatio = rulesCount > 0 ? issuesCount / rulesCount : 0;
+
+    let level = "Safe";
+    if (severityCounts.High > 0 || issueRatio > 0.5) {
+      level = "Unsecure";
+    } else if (severityCounts.Medium > 0 || issueRatio > 0.2) {
+      level = "Discrete";
+    }
+
+    return `Your CloudFormation template is considered ${level}. You have ${severityCounts.Low} low issues, ${severityCounts.Medium} medium issues, ${severityCounts.High} high issues, and ${severityCounts.Unclassified} unclassified issues.`;
+  };
+
+  // Reads the selected file and triggers the chosen scan
+  const handleFileAnalysis = (file: File) => {
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      try {
+        const fileContent = event.target?.result;
+        if (typeof fileContent !== "string") {
+          setError("Failed to read file content.");
+          return;
+        }
+        const jsonData = JSON.parse(fileContent);
+
+        const rulesCount = countTotalRules(jsonData);
+        setTotalRules(rulesCount);
+
+        setIsLoading(true);
+        setError(null);
+        setTotalIssues(0);
+        setSummaryMessage("");
+        setAnalysisStatus(
+          `Running ${scanType === "quick" ? "Quick Scan" : "Deep Search"}...`
+        );
+
+        let result;
+        if (scanType === "quick") {
+          result = await quickScan(jsonData);
+        } else {
+          result = await deepSearch(jsonData);
+        }
+
+        const issuesCount = countTotalIssues(result, scanType);
+        setTotalIssues(issuesCount);
+
+        const summary = generateSummary(result, scanType, rulesCount);
+        setSummaryMessage(summary);
+
+        setAnalysisStatus("Analysis Complete.");
+      } catch (err) {
+        console.error(err);
+        setError(
+          "An error occurred during analysis. Check the console and ensure the backend is running."
+        );
+        setAnalysisStatus("Analysis Failed.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    reader.onerror = () => {
+      setError("Failed to read the file.");
+    };
+    reader.readAsText(file);
+  };
+
+  // This function is called when a file is selected
   const handleFileSelected = (file: File | null) => {
     if (file && file.type === "application/json") {
       setUploadedFile(file);
-      console.log("File selected:", file);
+      handleFileAnalysis(file);
     } else {
       alert("Please select a valid JSON file.");
     }
   };
 
+  // Resets the uploaded file and all related states
   const handleRemoveFile = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
     setUploadedFile(null);
+    setError(null);
+    setAnalysisStatus(null);
+    setTotalRules(0);
+    setTotalIssues(0);
+    setSummaryMessage("");
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
   };
 
+  // Drag and drop handlers
   const handleDragOver = (e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     setIsDragOver(true);
@@ -50,8 +209,11 @@ function ReportPage() {
     }
   };
 
+  // Click and file change handlers
   const handleClick = () => {
-    fileInputRef.current?.click();
+    if (!uploadedFile) {
+      fileInputRef.current?.click();
+    }
   };
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -61,10 +223,9 @@ function ReportPage() {
     }
   };
 
+  // Truncates long filenames
   const truncateFileName = (name: string, maxLength: number = 25) => {
-    if (name.length <= maxLength) {
-      return name;
-    }
+    if (name.length <= maxLength) return name;
     const start = name.substring(0, 8);
     const end = name.substring(name.length - 10);
     return `${start}...${end}`;
@@ -99,7 +260,7 @@ function ReportPage() {
               {uploadedFile && (
                 <button
                   onClick={handleRemoveFile}
-                  className="absolute top-4 right-4 text-primary-blue hover:text-secondary-red transition-colors cursor-pointer"
+                  className="absolute top-4 right-4 text-primary-blue hover:text-secondary-red transition-colors"
                   aria-label="Remove file"
                 >
                   <FaTimes size={24} />
@@ -110,9 +271,9 @@ function ReportPage() {
                   ? truncateFileName(uploadedFile.name)
                   : "drop the file."}
               </p>
-              {uploadedFile && (
+              {analysisStatus && (
                 <p className="mt-2 text-sm text-primary-blue font-orbitron font-bold tracking-wider">
-                  File loaded. Ready for analysis.
+                  {analysisStatus}
                 </p>
               )}
             </div>
@@ -178,9 +339,10 @@ function ReportPage() {
             </div>
           </div>
         </div>
+        {error && <p className="text-red-500 mt-4 text-center">{error}</p>}
       </SectionContainer>
 
-      {uploadedFile && (
+      {uploadedFile && !isLoading && (
         <>
           <SectionContainer title="Analysis Results">
             <div className="flex gap-24 items-center justify-center">
@@ -188,8 +350,9 @@ function ReportPage() {
                 <div className="relative w-[225px] h-[225px] rounded-full bg-quaternary-red"></div>
                 <div className="absolute w-[180px] h-[180px] rounded-full bg-lighter-black text-quaternary-red font-rajdhani flex items-center justify-center">
                   <p className="text-5xl font-bold text-center leading-6">
-                    5<br />
-                    <span className="text-4xl ">/5</span>
+                    {totalIssues}
+                    <br />
+                    <span className="text-4xl ">/{totalRules}</span>
                   </p>
                   <div
                     id="point-circle"
@@ -206,14 +369,7 @@ function ReportPage() {
                 </div>
               </div>
               <JaggedBox className="h-[250px] w-[600px] font-orbitron text-sm font-bold text-quaternary-red">
-                <p className="p-4 py-18 text-justify">
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-                  Curabitur sem augue, placerat hendrerit aliquam in, rhoncus et
-                  ipsum. Aenean a est urna. Sed vel ex accumsan, aliquam tellus
-                  viverra, eleifend nisl. Sed viverra bibendum tortor. Proin
-                  imperdiet mauris vel nulla lacinia, et gravida est porttitor.
-                  Nunc id malesuada tellus. Nullam et arcu ligula.
-                </p>
+                <p className="p-4 py-18 text-justify">{summaryMessage}</p>
               </JaggedBox>
             </div>
             <div className="flex mt-6 font-rajdhani text-primary-blue mb-4 gap-4 ml-16 -mr-8">
