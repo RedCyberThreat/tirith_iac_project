@@ -1,12 +1,17 @@
-import React from "react";
-
-interface JaggedBoxProps {
+interface JaggedBoxProps extends React.HTMLAttributes<HTMLDivElement> {
   children: React.ReactNode;
   className?: string;
   type?: string;
+  innerClassName?: string;
 }
 
-function JaggedBox({ children, className = "", type }: JaggedBoxProps) {
+function JaggedBox({
+  children,
+  className = "",
+  type,
+  innerClassName,
+  ...props
+}: JaggedBoxProps) {
   const cutSize = "22px";
   const borderWidth = "2px";
   const diagonalInset = `calc(${borderWidth} * 0.75)`;
@@ -28,7 +33,7 @@ function JaggedBox({ children, className = "", type }: JaggedBoxProps) {
   )`;
 
   return (
-    <div className={`grid ${className}`}>
+    <div className={`grid ${className}`} {...props}>
       <div
         className={`${
           type === "lighter" ? "bg-[#652821]" : "bg-tertiary-red"
@@ -36,7 +41,7 @@ function JaggedBox({ children, className = "", type }: JaggedBoxProps) {
         style={{ clipPath: outerClipPath }}
       ></div>
       <div
-        className="bg-lighter-black [grid-area:1/1]"
+        className={`[grid-area:1/1] ${innerClassName || "bg-lighter-black"}`}
         style={{ clipPath: innerClipPath }}
       ></div>
       <div className="relative [grid-area:1/1]">{children}</div>
