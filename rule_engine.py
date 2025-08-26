@@ -39,7 +39,7 @@ def ec2_check_securitygroups(list_of_securityGroup_rules, iter, value):
     #loop inside the list that contain the securityGroup properties
     for i in list_of_securityGroup_rules:
         try:
-            if (value['Properties']['SecurityGroupIngress'][iter][i] in [22, 3389]):
+            if (value['Properties']['SecurityGroupIngress'][iter][i] in ["22", "3389"]):
                 if (value['Properties']['SecurityGroupIngress'][iter]["CidrIp"] == "0.0.0.0/0"):
                     dangerous_rules[i] = severity_evaluation(i)
         except KeyError:

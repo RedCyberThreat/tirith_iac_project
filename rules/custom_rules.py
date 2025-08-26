@@ -2,10 +2,11 @@ from cfnlint.rules import CloudFormationLintRule, RuleMatch
 
 
 class CustomS3PublicAccessBlockRule(CloudFormationLintRule):
-    id = "E01"
-    shortdesc = "S3 public access block booleans must be true"
-    description = "Detect S3 PublicAccessBlockConfiguration keys set to False"
-    tags = ["s3", "security"]
+    id = 'E01'
+    shortdesc = 'S3 public access block booleans must be true'
+    description = 'Detect S3 PublicAccessBlockConfiguration keys set to False'
+    tags = ['s3','security']
+
 
     def match(self, cfn):
         matches = []
@@ -53,10 +54,11 @@ class CustomS3PublicAccessBlockRule(CloudFormationLintRule):
 
 
 class CustomS3BucketEncryptionRule(CloudFormationLintRule):
-    id = "E02"
-    shortdesc = "S3 buckets should have server-side encryption"
-    description = "Checks that S3 BucketEncryption uses AES256 or aws:kms, if aws:kms is set, check that the keys has been initialized"
-    tags = ["s3", "encryption"]
+    id = 'E02'
+    shortdesc = 'S3 buckets should have server-side encryption'
+    description = 'Checks that S3 BucketEncryption uses AES256 or aws:kms, if aws:kms is set, check that the keys has been initialized'
+    tags = ['s3','encryption']
+
 
     def match(self, cfn):
         matches = []
@@ -85,10 +87,10 @@ class CustomS3BucketEncryptionRule(CloudFormationLintRule):
 
 
 class CustomIamWildcardActionRule(CloudFormationLintRule):
-    id = "E03"
-    shortdesc = "IAM policies should not use wildcard action"
-    description = "Detects Action: * wildcard or similar in policies"
-    tags = ["iam", "security"]
+    id = 'E03'
+    shortdesc = 'IAM policies should not use wildcard action'
+    description = 'Detects Action: * wildcard or similar in policies'
+    tags = ['iam','security']
 
     def _check_policy_doc(self, policy_doc, base_path, matches, resname):
         stmts = policy_doc.get("Statement") or []
@@ -140,10 +142,10 @@ class CustomIamWildcardActionRule(CloudFormationLintRule):
 
 
 class CustomSecurityGroupOpenToWorldRule(CloudFormationLintRule):
-    id = "E04"
-    shortdesc = "SecurityGroup opens SSH/RDP or all ports to 0.0.0.0/0"
-    description = "Detects SecurityGroup ingress/egress entries open to 0.0.0.0/0 on ports 22 or 3389 or all ports"
-    tags = ["ec2", "security"]
+    id = 'E04'
+    shortdesc = 'SecurityGroup opens SSH/RDP or all ports to 0.0.0.0/0'
+    description = 'Detects SecurityGroup ingress/egress entries open to 0.0.0.0/0 on ports 22 or 3389 or all ports'
+    tags = ['ec2','security']
 
     def _port_contains_danger(self, from_p, to_p):
         try:
@@ -192,10 +194,10 @@ class CustomSecurityGroupOpenToWorldRule(CloudFormationLintRule):
 
 
 class CustomRdsStorageEncryptedRule(CloudFormationLintRule):
-    id = "E05"
-    shortdesc = "RDS StorageEncrypted must be true"
-    description = "Check DBInstance and DBCluster StorageEncrypted property"
-    tags = ["rds", "encryption"]
+    id = 'E05'
+    shortdesc = 'RDS StorageEncrypted must be true'
+    description = 'Check DBInstance and DBCluster StorageEncrypted property'
+    tags = ['rds','encryption']
 
     def match(self, cfn):
         matches = []
@@ -209,14 +211,13 @@ class CustomRdsStorageEncryptedRule(CloudFormationLintRule):
                         RuleMatch(path, f"{name} missing StorageEncrypted=true")
                     )
         return matches
-
-
-# new rules
+    
+#new rules
 class CustomS3BucketVersioningRule(CloudFormationLintRule):
-    id = "E06"
-    shortdesc = "S3 buckets should have versioning enabled"
-    description = "Check if an S3 bucket has versioning configured and enabled"
-    tags = ["s3", "operations"]
+    id = 'E06'
+    shortdesc = 'S3 buckets should have versioning enabled'
+    description = 'Check if an S3 bucket has versioning configured and enabled'
+    tags = ['s3', 'operations']
 
     def match(self, cfn):
         matches = []
@@ -230,12 +231,11 @@ class CustomS3BucketVersioningRule(CloudFormationLintRule):
                 )
         return matches
 
-
 class CustomS3BucketAccessLoggingRule(CloudFormationLintRule):
-    id = "E07"
-    shortdesc = "S3 buckets should have access logging enabled"
-    description = "Check if an S3 bucket has access logging enabled"
-    tags = ["s3", "security", "operations"]
+    id = 'E07'
+    shortdesc = 'S3 buckets should have access logging enabled'
+    description = 'Check if an S3 bucket has access logging enabled'
+    tags = ['s3', 'security', 'operations']
 
     def match(self, cfn):
         matches = []
@@ -253,10 +253,10 @@ class CustomS3BucketAccessLoggingRule(CloudFormationLintRule):
 
 
 class CustomEC2InstanceNoPublicIpRule(CloudFormationLintRule):
-    id = "E08"
-    shortdesc = "EC2 instances should not have public IPs"
-    description = "EC2 instances with a public IP assigned during launch"
-    tags = ["ec2", "security"]
+    id = 'E08'
+    shortdesc = 'EC2 instances should not have public IPs'
+    description = 'EC2 instances with a public IP assigned during launch'
+    tags = ['ec2', 'security']
 
     def match(self, cfn):
         matches = []
@@ -273,12 +273,12 @@ class CustomEC2InstanceNoPublicIpRule(CloudFormationLintRule):
                 )
         return matches
 
-
 class CustomLambdaVpcConfigRule(CloudFormationLintRule):
-    id = "W09"
-    shortdesc = "Lambda functions should be in a VPC for sensitive workloads"
-    description = "Check if a Lambda function is not configured to run in a VPC"
-    tags = ["lambda", "security"]
+    id = 'W09'
+    shortdesc = 'Lambda functions should be in a VPC for sensitive workloads'
+    description = 'Check if a Lambda function is not configured to run in a VPC'
+    tags = ['lambda', 'security']
+
 
     def match(self, cfn):
         matches = []
@@ -296,10 +296,11 @@ class CustomLambdaVpcConfigRule(CloudFormationLintRule):
 
 
 class CustomRDSMultiAzRule(CloudFormationLintRule):
-    id = "W10"
-    shortdesc = "RDS instances should use Multi-AZ for high availability"
-    description = "Check if an RDS DBInstance is not configured for Multi-AZ"
-    tags = ["rds", "availability", "operations"]
+    id = 'W10'
+    shortdesc = 'RDS instances should use Multi-AZ for high availability'
+    description = 'Check if an RDS DBInstance is not configured for Multi-AZ'
+    tags = ['rds', 'availability', 'operations']
+
 
     def match(self, cfn):
         matches = []
@@ -318,10 +319,11 @@ class CustomRDSMultiAzRule(CloudFormationLintRule):
 
 
 class CustomCloudFrontHttpsOnlyRule(CloudFormationLintRule):
-    id = "E11"
-    shortdesc = "CloudFront distributions should use HTTPS-only"
-    description = "Check if CloudFront distribution viewer protocol policy is not set to redirect to HTTPS"
-    tags = ["cloudfront", "security"]
+    id = 'E11'
+    shortdesc = 'CloudFront distributions should use HTTPS-only'
+    description = 'Check if CloudFront distribution viewer protocol policy is not set to redirect to HTTPS'
+    tags = ['cloudfront', 'security']
+
 
     def match(self, cfn):
         matches = []
@@ -352,10 +354,10 @@ class CustomCloudFrontHttpsOnlyRule(CloudFormationLintRule):
 
 
 class CustomCloudWatchLogRetentionRule(CloudFormationLintRule):
-    id = "W12"
-    shortdesc = "CloudWatch Log Group retention period should be set"
-    description = "Check if a CloudWatch Log Group has no retention period defined"
-    tags = ["cloudwatch", "operations", "cost"]
+    id = 'W12'
+    shortdesc = 'CloudWatch Log Group retention period should be set'
+    description = 'Check if a CloudWatch Log Group has no retention period defined'
+    tags = ['cloudwatch', 'operations', 'cost']
 
     def match(self, cfn):
         matches = []
@@ -374,10 +376,11 @@ class CustomCloudWatchLogRetentionRule(CloudFormationLintRule):
 
 
 class CustomVpcFlowLogsEnabledRule(CloudFormationLintRule):
-    id = "W13"
-    shortdesc = "VPC Flow Logs should be enabled"
-    description = "Check if VPC Flow Logs are not enabled for a VPC"
-    tags = ["ec2", "vpc", "security"]
+    id = 'W13'
+    shortdesc = 'VPC Flow Logs should be enabled'
+    description = 'Check if VPC Flow Logs are not enabled for a VPC'
+    tags = ['ec2', 'vpc', 'security']
+
 
     def match(self, cfn):
         matches = []
@@ -400,12 +403,11 @@ class CustomVpcFlowLogsEnabledRule(CloudFormationLintRule):
 
 
 class CustomLambdaEnvVarEncryptionRule(CloudFormationLintRule):
-    id = "W16"
-    shortdesc = "Lambda environment variables should not contain secrets"
-    description = (
-        "Check if Lambda function environment variables are potentially sensitive"
-    )
-    tags = ["lambda", "security"]
+
+    id = 'W16'
+    shortdesc = 'Lambda environment variables should not contain secrets'
+    description = 'Check if Lambda function environment variables are potentially sensitive'
+    tags = ['lambda', 'security']
 
     def match(self, cfn):
         matches = []
@@ -436,10 +438,11 @@ class CustomLambdaEnvVarEncryptionRule(CloudFormationLintRule):
 
 
 class CustomEC2TaggingEnforcedRule(CloudFormationLintRule):
-    id = "W17"
-    shortdesc = "EC2 instances should have a Name tag"
-    description = "Check if an EC2 instance is missing a Name tag"
-    tags = ["ec2", "cost", "operations"]
+    id = 'W17'
+    shortdesc = 'EC2 instances should have a Name tag'
+    description = 'Check if an EC2 instance is missing a Name tag'
+    tags = ['ec2', 'cost', 'operations']
+
 
     def match(self, cfn):
         matches = []
@@ -455,10 +458,11 @@ class CustomEC2TaggingEnforcedRule(CloudFormationLintRule):
 
 
 class CustomEbsEncryptionEnabledRule(CloudFormationLintRule):
-    id = "E18"
-    shortdesc = "EBS volumes must be encrypted"
-    description = "Checks if an EBS volume has encryption enabled"
-    tags = ["ec2", "ebs", "encryption", "security"]
+    id = 'E18'
+    shortdesc = 'EBS volumes must be encrypted'
+    description = 'Checks if an EBS volume has encryption enabled'
+    tags = ['ec2', 'ebs', 'encryption', 'security']
+
 
     def match(self, cfn):
         matches = []
@@ -472,12 +476,11 @@ class CustomEbsEncryptionEnabledRule(CloudFormationLintRule):
 
 
 class CustomECRImageScanningRule(CloudFormationLintRule):
-    id = "W19"
-    shortdesc = "ECR repositories should have image scanning enabled"
-    description = (
-        "Check if an ECR repository is not configured for image scanning on push"
-    )
-    tags = ["ecr", "security"]
+    id = 'W19'
+    shortdesc = 'ECR repositories should have image scanning enabled'
+    description = 'Check if an ECR repository is not configured for image scanning on push'
+    tags = ['ecr', 'security']
+
 
     def match(self, cfn):
         matches = []
@@ -497,12 +500,11 @@ class CustomECRImageScanningRule(CloudFormationLintRule):
 
 
 class CustomRdsDeletionProtectionRule(CloudFormationLintRule):
-    id = "W20"
-    shortdesc = "RDS instances should have deletion protection enabled"
-    description = (
-        "Check if an RDS DBInstance is not configured with deletion protection"
-    )
-    tags = ["rds", "operations"]
+    id = 'W20'
+    shortdesc = 'RDS instances should have deletion protection enabled'
+    description = 'Check if an RDS DBInstance is not configured with deletion protection'
+    tags = ['rds', 'operations']
+
 
     def match(self, cfn):
         matches = []
@@ -521,10 +523,11 @@ class CustomRdsDeletionProtectionRule(CloudFormationLintRule):
 
 
 class CustomIamUserNoInlinePolicies(CloudFormationLintRule):
-    id = "W21"
-    shortdesc = "IAM users should not have inline policies"
-    description = "Use managed policies over inline policies for IAM users"
-    tags = ["iam", "security"]
+    id = 'W21'
+    shortdesc = 'IAM users should not have inline policies'
+    description = 'Use managed policies over inline policies for IAM users'
+    tags = ['iam', 'security']
+
 
     def match(self, cfn):
         matches = []
@@ -540,10 +543,11 @@ class CustomIamUserNoInlinePolicies(CloudFormationLintRule):
 
 
 class CustomSnsTopicPolicyEnforcedRule(CloudFormationLintRule):
-    id = "E22"
-    shortdesc = "SNS topic policies should restrict access"
-    description = "Check for an SNS topic policy that is overly permissive"
-    tags = ["sns", "security"]
+    id = 'E22'
+    shortdesc = 'SNS topic policies should restrict access'
+    description = 'Check for an SNS topic policy that is overly permissive'
+    tags = ['sns', 'security']
+
 
     def _check_policy(self, policy_doc, base_path, matches, resname):
         statements = policy_doc.get("Statement") or []
@@ -575,12 +579,11 @@ class CustomSnsTopicPolicyEnforcedRule(CloudFormationLintRule):
 
 
 class CustomWafEnabledOnCloudFront(CloudFormationLintRule):
-    id = "W23"
-    shortdesc = "CloudFront distributions should use a WAF WebACL"
-    description = (
-        "Control if a CloudFront distribution is not associated with a WebACLId"
-    )
-    tags = ["cloudfront", "security"]
+    id = 'W23'
+    shortdesc = 'CloudFront distributions should use a WAF WebACL'
+    description = 'Control if a CloudFront distribution is not associated with a WebACLId'
+    tags = ['cloudfront', 'security']
+
 
     def match(self, cfn):
         matches = []
@@ -606,12 +609,11 @@ class CustomWafEnabledOnCloudFront(CloudFormationLintRule):
 
 
 class CustomCloudTrailEncryptionRule(CloudFormationLintRule):
-    id = "E24"
-    shortdesc = "CloudTrail logs should be encrypted with KMS"
-    description = (
-        "Check if a CloudTrail trail is configured with a KMS key ID for encryption"
-    )
-    tags = ["cloudtrail", "security", "encryption"]
+    id = 'E24'
+    shortdesc = 'CloudTrail logs should be encrypted with KMS'
+    description = 'Check if a CloudTrail trail is configured with a KMS key ID for encryption'
+    tags = ['cloudtrail', 'security', 'encryption']
+
 
     def match(self, cfn):
         matches = []
@@ -630,10 +632,11 @@ class CustomCloudTrailEncryptionRule(CloudFormationLintRule):
 
 
 class CustomSecretsManagerRotationRule(CloudFormationLintRule):
-    id = "W25"
-    shortdesc = "Secrets Manager secrets should have rotation enabled"
-    description = "An AWS Secrets Manager secret is not configured for rotation"
-    tags = ["secretsmanager", "security"]
+    id = 'W25'
+    shortdesc = 'Secrets Manager secrets should have rotation enabled'
+    description = 'An AWS Secrets Manager secret is not configured for rotation'
+    tags = ['secretsmanager', 'security']
+
 
     def match(self, cfn):
         matches = []
@@ -650,12 +653,12 @@ class CustomSecretsManagerRotationRule(CloudFormationLintRule):
                 )
         return matches
 
-
 class CustomS3PublicReadWriteACLRule(CloudFormationLintRule):
-    id = "E26"
-    shortdesc = "S3 buckets should not have public read/write ACLs"
-    description = "Check S3 buckets with ACLs that allow public read or write access"
-    tags = ["s3", "security"]
+    id = 'E26'
+    shortdesc = 'S3 buckets should not have public read/write ACLs'
+    description = 'Check S3 buckets with ACLs that allow public read or write access'
+    tags = ['s3', 'security']
+
 
     def match(self, cfn):
         matches = []
@@ -674,10 +677,11 @@ class CustomS3PublicReadWriteACLRule(CloudFormationLintRule):
 
 
 class CustomApiGatewayCachingEnabledRule(CloudFormationLintRule):
-    id = "W28"
-    shortdesc = "API Gateway stages should have caching enabled"
-    description = "Check if an API Gateway Stage is not configured with caching"
-    tags = ["apigateway", "cost", "performance"]
+
+    id = 'W28'
+    shortdesc = 'API Gateway stages should have caching enabled'
+    description = 'Check if an API Gateway Stage is not configured with caching'
+    tags = ['apigateway', 'cost', 'performance']
 
     def match(self, cfn):
         matches = []
@@ -695,10 +699,10 @@ class CustomApiGatewayCachingEnabledRule(CloudFormationLintRule):
 
 
 class CustomDynamoDbEncryptionRule(CloudFormationLintRule):
-    id = "E29"
-    shortdesc = "DynamoDB tables should be encrypted"
-    description = "Check if a DynamoDB table has server-side encryption enabled"
-    tags = ["dynamodb", "security", "encryption"]
+    id = 'E29'
+    shortdesc = 'DynamoDB tables should be encrypted'
+    description = 'Check if a DynamoDB table has server-side encryption enabled'
+    tags = ['dynamodb', 'security', 'encryption']
 
     def match(self, cfn):
         matches = []
@@ -717,10 +721,10 @@ class CustomDynamoDbEncryptionRule(CloudFormationLintRule):
 
 
 class CustomIamPolicyAttachedToGroupRule(CloudFormationLintRule):
-    id = "W30"
-    shortdesc = "IAM policies should be attached to groups, not users"
-    description = "Attaching IAM policies to groups instead of individual users"
-    tags = ["iam", "security"]
+    id = 'W30'
+    shortdesc = 'IAM policies should be attached to groups, not users'
+    description = 'Attaching IAM policies to groups instead of individual users'
+    tags = ['iam', 'security']
 
     def match(self, cfn):
         matches = []
@@ -739,10 +743,11 @@ class CustomIamPolicyAttachedToGroupRule(CloudFormationLintRule):
 
 
 class CustomEc2SshFromAnywhereRule(CloudFormationLintRule):
-    id = "E31"
-    shortdesc = "Security groups should not allow SSH from 0.0.0.0/0"
-    description = "Check security group ingress rules for port 22 open to the world"
-    tags = ["ec2", "security"]
+    id = 'E31'
+    shortdesc = 'Security groups should not allow SSH from 0.0.0.0/0'
+    description = 'Check security group ingress rules for port 22 open to the world'
+    tags = ['ec2', 'security']
+
 
     def match(self, cfn):
         matches = []
@@ -750,24 +755,12 @@ class CustomEc2SshFromAnywhereRule(CloudFormationLintRule):
             props = res.get("Properties", {}) or {}
             ingress_rules = props.get("SecurityGroupIngress") or []
             for idx, rule in enumerate(ingress_rules):
-                from_port = rule.get("Fromport")
-                to_port = rule.get("ToPort")
-                cidr_ip = rule.get("CidrIp")
-                if cidr_ip in ("0.0.0.0/0", "::/0") and (
-                    from_port is not None
-                    and to_port is not None
-                    and from_port <= 22 <= to_port
-                ):
-                    path = [
-                        "Resources",
-                        name,
-                        "Properties",
-                        "SecurityGroupIngress",
-                        idx,
-                    ]
-                    matches.append(
-                        RuleMatch(
-                            path, f"{name}: Security group allows SSH from the internet"
-                        )
-                    )
+
+                from_port = rule.get('Fromport')
+                to_port = rule.get('ToPort')
+                cidr_ip = rule.get('CidrIp')
+                if cidr_ip in ('0.0.0.0/0', '::/0') and (from_port is not None and to_port is not None and from_port <= 22 <= to_port):
+                    path = ['Resources', name, 'Properties', 'SecurityGroupIngress', idx]
+                    matches.append(RuleMatch(path, f"{name}: Security group allows SSH from the internet"))
         return matches
+
