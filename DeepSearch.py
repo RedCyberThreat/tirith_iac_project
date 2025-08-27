@@ -2,10 +2,10 @@ from pathlib import Path
 import json as j
 
 from cfnlint.api import lint_file, ManualArgs
-from utilities import severity_evaluation
+from utilities import severity_evaluation, find_line, create_path_for_coordinate_resources
 
 
-#to run this code use py 3.13.0
+#to run this code use py 3.11.0
 
 def lint_cloudformation_template(data):
     
@@ -13,11 +13,9 @@ def lint_cloudformation_template(data):
 
     try:
         config_args = ManualArgs(
-            regions=["us-east-1"],
-            
+            regions=["us-east-1"],   
         )
         
-
         matches = lint_file(file_path, config=config_args)
         
         filtered_matches = []
@@ -32,6 +30,7 @@ def lint_cloudformation_template(data):
         return None
 
 def generate_deepsearch_result(lint_results: list):
+    
     grouped_output = {}
 
     if lint_results is None:
@@ -47,12 +46,14 @@ def generate_deepsearch_result(lint_results: list):
             property_name = str(match.path[3])
         else:
             property_name = "UnknownProperty"
+            
+        path_to_calculate_line = create_path_for_coordinate_resources(match.path)
 
         finding = {
             "severity": severity_evaluation(str(property_name)),
             "message": match.message,
-            "path": f"{match.filename}:{match.linenumber}:{match.columnnumber}",
-            "rule_solution": match.rule.description
+            "path": str(find_line("./user_data/line_mapping.json", path_to_calculate_line)),
+            "rule_solution": match.rule.description,
         }
 
         if resource_name not in grouped_output:
