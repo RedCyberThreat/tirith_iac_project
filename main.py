@@ -3,6 +3,7 @@ from QuickScan import threat_check
 from DeepSearch import generate_deepsearch_result, lint_cloudformation_template
 from utilities import save_file, delete_folder
 
+
 # fix CORS
 from flask_cors import CORS
 
@@ -25,11 +26,11 @@ def quick_scan():
 @app.route("/api/deepsearch", methods=['POST'])
 def deep_search():
 
-    user_data = request.get_json()
+    raw_user_data = request.get_data(as_text=True)
+    
+    save_file(raw_user_data)
 
-    save_file(user_data)
-
-    scan_results = lint_cloudformation_template("./user_data/user_json.json")
+    scan_results = lint_cloudformation_template("./user_data/line_mapping.json")
 
     return_json = generate_deepsearch_result(scan_results)
 
