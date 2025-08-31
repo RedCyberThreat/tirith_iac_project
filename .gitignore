@@ -182,9 +182,9 @@ cython_debug/
 .abstra/
 
 # Visual Studio Code
-#  Visual Studio Code specific template is maintained in a separate VisualStudioCode.gitignore 
+#  Visual Studio Code specific template is maintained in a separate VisualStudioCode.gitignore
 #  that can be found at https://github.com/github/gitignore/blob/main/Global/VisualStudioCode.gitignore
-#  and can be added to the global gitignore or merged into this file. However, if you prefer, 
+#  and can be added to the global gitignore or merged into this file. However, if you prefer,
 #  you could uncomment the following to ignore the entire vscode folder
 # .vscode/
 
@@ -249,3 +249,49 @@ Thumbs.db
 # TypeScript
 # Ignore TypeScript cache files
 *.tsbuildinfo
+
+# Python
+# Virtual environment directory
+.venv/
+.env
+
+# Compiled bytecode files
+__pycache__/
+*.pyc
+
+# IDE-specific files (e.g., from VS Code, PyCharm)
+.idea/
+.vscode/
+
+# User-generated data and temporary files
+user_data/
+*.log
+
+# Node.js
+# Dependency directory
+node_modules/
+
+# Lock files that are generated and can be rebuilt
+package-lock.json
+pnpm-lock.yaml
+
+# Build output directories
+dist/
+build/
+
+# Typescript build info
+.tmp/
+*.tsbuildinfo
+
+# Eslint cache
+.eslintcache
+
+# OS-generated files
+.DS_Store
+Thumbs.db
+
+# Vite-specific files (if not already covered)
+.vite/
+
+# Temporary or non-essential images
+public/*.png

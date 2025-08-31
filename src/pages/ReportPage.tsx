@@ -1,3 +1,4 @@
+// File: /home/marco/Programming/tirith-iac-security-scanner/src/pages/ReportPage.tsx
 import { useState, useRef, type DragEvent, type ChangeEvent } from "react";
 import "../App.css";
 import { Link } from "react-router-dom";
@@ -170,32 +171,34 @@ function ReportPage() {
           }
           setProcessedResults(processed);
         } else {
-          result = await deepSearch(jsonData);
+          result = await deepSearch(fileContent);
           setScanResult(result);
           const processed: ProcessedDeepResult[] = [];
           const deepScanResult = result as DeepSearchResponse;
-          if (deepScanResult.Resources) {
-            for (const resource in deepScanResult.Resources) {
-              deepScanResult.Resources[resource].forEach(
-                (finding: DeepFinding) => {
-                  const pathParts = finding.path.split(":");
+
+          if (deepScanResult && deepScanResult.Resources) {
+            for (const [rule, findings] of Object.entries(
+              deepScanResult.Resources
+            )) {
+              if (Array.isArray(findings)) {
+                findings.forEach((finding: DeepFinding) => {
+                  let line = "N/A";
+                  if (finding.path && finding.path !== "not found") {
+                    line = finding.path.replace(":", " | ");
+                  }
                   processed.push({
-                    rule: resource,
+                    rule: rule,
                     description: finding.message,
-                    line:
-                      pathParts.length > 1
-                        ? `${pathParts[1]}:${pathParts[2]}`
-                        : finding.path,
+                    line: line,
                     recommendation: finding.rule_solution,
                     severity: finding.severity,
                   });
-                }
-              );
+                });
+              }
             }
           }
           setProcessedResults(processed);
         }
-
         const issuesCount = countTotalIssues(result, scanType);
         setTotalIssues(issuesCount);
 
