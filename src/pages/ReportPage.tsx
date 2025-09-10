@@ -83,7 +83,7 @@ const VulnerabilityItem = ({
       case "medium":
         return "text-yellow-500";
       case "low":
-        return "text-sky-500";
+        return "text-green-500";
       default:
         return "text-gray-400";
     }
@@ -581,5 +581,3 @@ function ReportPage() {
 }
 
 export default ReportPage;
-
-
