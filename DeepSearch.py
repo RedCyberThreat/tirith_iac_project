@@ -32,11 +32,6 @@ def lint_cloudformation_template(data):
 def generate_deepsearch_result(lint_results: list):
     
     grouped_output = {}
-    
-    #dictionaries for sorting
-    high_severity = {}
-    medium_severity = {}
-    low_severity = {}
 
     if lint_results is None:
         return {"error": "Linting failed or returned no results."}
