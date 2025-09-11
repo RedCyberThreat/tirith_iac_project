@@ -504,9 +504,6 @@ function ReportPage() {
                   <p className="text-5xl font-bold text-center leading-6">
                     {totalIssues}
                   </p>
-                  <p className="text-4xl font-light text-center">
-                    /{totalRules}
-                  </p>
                 </div>
                 <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10">
                   <div id="point-circle" className="h-4 w-4 rounded-full bg-[#ff7373] absolute -top-[125px] left-[75px]"></div>
