@@ -14,7 +14,7 @@ def severity_evaluation(rule):
                     "logging", "audit", "kms", "encrypted", "group", "az", "property", "policies"}
     
     low_severity = {"naming", "tag", "versioning", "backup", "idle", "default", "description",
-                "engine", "0", "1"}
+                "engine", "0", "1", "2"}
 
     rule_lower = rule.lower()
     #check for high severity keywords
@@ -31,12 +31,9 @@ def severity_evaluation(rule):
 #function to create a folder if not exist and put inside the json file to be parsed to lint
 def save_file(raw_data):
     
-    source_file_name = "user_json.json"
-    
     os.makedirs("user_data", exist_ok=True)
     
     #define the path for the file
-    file_path = os.path.join("user_data", source_file_name)
     second_file_name = os.path.join("user_data", "line_mapping.json")
     
     try:   

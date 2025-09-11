@@ -23,7 +23,7 @@ def deep_search():
 
     raw_user_data = request.get_data(as_text=True)
     
-    save_file( raw_user_data)
+    save_file(raw_user_data)
 
     scan_results = lint_cloudformation_template("./user_data/line_mapping.json")
 
