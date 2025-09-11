@@ -40,12 +40,15 @@ def generate_deepsearch_result(lint_results: list):
     if lint_results is None:
         return {"error": "Linting failed or returned no results."}
     
+    #using bubble sort for ordering the values
     n = len(lint_results)
     
+    #mapping the severity values
     severity_values = {"High" : 3, "Medium" : 2, "Low" : 1}
     for i in range(n):
         for j in range(0, n - i - 1):
             
+            #identiifyng the values
             if len(lint_results[j].path) >= 4:
                 property_name_1 = severity_evaluation(str(lint_results[j].path[3]))
             else:
@@ -55,7 +58,8 @@ def generate_deepsearch_result(lint_results: list):
                 property_name_2 = severity_evaluation(str(lint_results[j + 1].path[3])) 
             else:
                 property_name_2 = severity_evaluation("UnknownProperty")
-                
+               
+            #swapping the values 
             if (severity_values[property_name_1] < severity_values[property_name_2]):
                 temp_val = lint_results[j]
                 lint_results[j] = lint_results[j + 1]
