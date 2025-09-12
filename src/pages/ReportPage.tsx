@@ -1,18 +1,13 @@
 import { useState, useRef, type DragEvent, type ChangeEvent } from "react";
-import "../App.css";
-import { Link } from "react-router-dom";
-import Header from "../components/layout/Header";
-import JaggedBox from "../components/layout/JaggedBox";
-import SectionContainer from "../components/layout/SectionContainer";
-import VulnerabilityItem from "../components/layout/VulnerabilityItem";
-import Footer from "../components/layout/Footer";
 import { FaTimes } from "react-icons/fa";
-import { quickScan, deepSearch } from "../api/scan";
+import { Link } from "react-router-dom";
 import type {
   QuickScanResponse,
   DeepSearchResponse,
   DeepFinding,
 } from "../types/scan";
+import { quickScan, deepSearch } from "../api/scan";
+import "../App.css";
 
 type ProcessedQuickResult = {
   resource: string;
@@ -29,6 +24,115 @@ type ProcessedDeepResult = {
 };
 
 type ProcessedResult = ProcessedQuickResult | ProcessedDeepResult;
+
+// Define the Header component LandingPage-like
+const HeaderComponent = () => (
+  <header className="bg-[#2d110f] p-4 font-rajdhani">
+    <div className="container mx-auto flex justify-between items-center">
+      <div className="flex items-center gap-3">
+        <div className="flex flex-col items-center justify-center w-12 h-12 gap-1 rounded-full bg-sky-500 ">
+          <span className="block w-8 h-1.5 bg-red-800 rounded-full"></span>
+          <span className="block w-8 h-1.5 bg-red-800 rounded-full"></span>
+          <span className="block w-8 h-1.5 bg-red-800 rounded-full"></span>
+        </div>
+        <h1 className="text-4xl text-sky-400 font-bold">IaC - Tirith</h1>
+      </div>
+      <nav className="flex gap-4 text-sky-400">
+        <a href="#features" className="hover:text-sky-300">Features</a>
+        <a href="#about" className="hover:text-sky-300">About</a>
+        <a href="#cta" className="hover:text-sky-300">Get Started</a>
+      </nav>
+    </div>
+  </header>
+);
+
+// Define the Footer component LandingPage-like
+const FooterComponent = ({ className }: { className?: string }) => (
+  <footer className={`bg-[#2d110f] text-center text-sky-400 p-4 ${className}`}>
+    <p>&copy; 2025 IaC - Tirith. All rights reserved.</p>
+  </footer>
+);
+
+// Define the SectionContainer as for the LandingPage
+const SectionContainerComponent = ({ title, children }: { title?: string; children: React.ReactNode }) => (
+  <div className="border-2 border-[#652821] p-2 rounded-lg bg-[#361519] bg-opacity-50 shadow-lg my-8">
+    {title && <h2 className="text-3xl font-bold text-sky-400 font-rajdhani text-center mb-4">{title}</h2>}
+    {children}
+  </div>
+);
+
+// Define the JaggedBox component as for the LandingPage
+const JaggedBoxComponent = ({ children, className, type, innerClassName, ...props }: { children: React.ReactNode; className?: string; type?: string; innerClassName?: string; [key: string]: any }) => {
+  const baseClasses = "border-2 border-[#652821] bg-[#361519] p-4";
+  const lighterBg = type === 'lighter' ? 'bg-[#4a1c23]' : '';
+  const combinedClasses = `${baseClasses} ${lighterBg} ${className} ${innerClassName}`;
+  return <div className={combinedClasses} {...props}>{children}</div>;
+};
+
+// New/updated VulnerabilityItem component to handle both scan types
+const VulnerabilityItem = ({
+  scanType,
+  ...props
+}: {
+  scanType: "quick" | "deep";
+} & (ProcessedQuickResult | ProcessedDeepResult)) => {
+  const getSeverityColor = (severity: string | null) => {
+    switch (severity?.toLowerCase()) {
+      case "high":
+        return "text-red-500";
+      case "medium":
+        return "text-yellow-500";
+      case "low":
+        return "text-green-500";
+      default:
+        return "text-gray-400";
+    }
+  };
+
+  return (
+    <div className="flex font-rajdhani text-stone-200 mb-2 gap-4 text-center">
+      {scanType === "quick" ? (
+        <JaggedBoxComponent className="flex w-full">
+          <div className="w-[30%] text-2xl md:text-3xl text-sky-400 p-2 leading-none font-light text-center bg-[#361519]">
+            {(props as ProcessedQuickResult).rule}
+          </div>
+          <div className="w-[40%] text-2xl md:text-3xl text-sky-400 p-2 leading-none font-light text-center bg-[#361519]">
+            {(props as ProcessedQuickResult).resource}
+          </div>
+          <div
+            className={`w-[30%] text-2xl md:text-3xl p-2 leading-none font-light text-center bg-[#361519] ${getSeverityColor(
+              (props as ProcessedQuickResult).severity
+            )}`}
+          >
+            {(props as ProcessedQuickResult).severity}
+          </div>
+        </JaggedBoxComponent>
+      ) : (
+        <JaggedBoxComponent className="flex w-full">
+          <div className="w-[20%] text-2xl md:text-3xl text-sky-400 p-2 leading-none font-light text-center bg-[#361519]">
+            {(props as ProcessedDeepResult).rule}
+          </div>
+          <div className="w-[25%] text-2xl md:text-3xl text-sky-400 p-2 leading-none font-light text-center bg-[#361519]">
+            {(props as ProcessedDeepResult).description}
+          </div>
+          <div className="w-[15%] text-2xl md:text-3xl text-sky-400 p-2 leading-none font-light text-center bg-[#361519]">
+            {(props as ProcessedDeepResult).line}
+          </div>
+          <div
+            className={`w-[15%] text-2xl md:text-3xl p-2 leading-none font-light text-center bg-[#361519] ${getSeverityColor(
+              (props as ProcessedDeepResult).severity
+            )}`}
+          >
+            {(props as ProcessedDeepResult).severity}
+          </div>
+          <div className="w-[25%] text-2xl md:text-3xl text-sky-400 p-2 leading-none font-light text-center bg-[#361519]">
+            {(props as ProcessedDeepResult).recommendation}
+          </div>
+        </JaggedBoxComponent>
+      )}
+    </div>
+  );
+};
 
 function ReportPage() {
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
@@ -47,13 +151,6 @@ function ReportPage() {
   const [scanResult, setScanResult] = useState<
     QuickScanResponse | DeepSearchResponse | null
   >(null);
-
-  const countTotalRules = (jsonData: any) => {
-    if (jsonData && jsonData.Resources) {
-      return Object.keys(jsonData.Resources).length;
-    }
-    return 0;
-  };
 
   const countTotalIssues = (
     scanResult: QuickScanResponse | DeepSearchResponse,
@@ -139,9 +236,6 @@ function ReportPage() {
         }
         const jsonData = JSON.parse(fileContent);
 
-        const rulesCount = countTotalRules(jsonData);
-        setTotalRules(rulesCount);
-
         setIsLoading(true);
         setError(null);
         setTotalIssues(0);
@@ -152,8 +246,16 @@ function ReportPage() {
         );
 
         let result;
+        let rulesCount = 0;
         if (scanType === "quick") {
+          console.log("Making a quick scan API call with POST method...");
           result = await quickScan(jsonData);
+          // Correctly count the number of individual rule findings
+          Object.values(result).forEach((resourceFindings) => {
+            resourceFindings.forEach((finding) => {
+              rulesCount += Object.keys(finding).length;
+            });
+          });
           setScanResult(result);
           const processed: ProcessedQuickResult[] = [];
           const quickScanResult = result as QuickScanResponse;
@@ -170,32 +272,39 @@ function ReportPage() {
           }
           setProcessedResults(processed);
         } else {
-          result = await deepSearch(jsonData);
+          console.log("Making a deep scan API call with POST method...");
+          result = await deepSearch(fileContent);
+          if (jsonData && jsonData.Resources) {
+              rulesCount = Object.keys(jsonData.Resources).length;
+          }
           setScanResult(result);
           const processed: ProcessedDeepResult[] = [];
           const deepScanResult = result as DeepSearchResponse;
-          if (deepScanResult.Resources) {
-            for (const resource in deepScanResult.Resources) {
-              deepScanResult.Resources[resource].forEach(
-                (finding: DeepFinding) => {
-                  const pathParts = finding.path.split(":");
+
+          if (deepScanResult && deepScanResult.Resources) {
+            for (const [rule, findings] of Object.entries(
+              deepScanResult.Resources
+            )) {
+              if (Array.isArray(findings)) {
+                findings.forEach((finding: DeepFinding) => {
+                  let line = "N/A";
+                  if (finding.path && finding.path !== "not found") {
+                    line = finding.path.replace(":", " | ");
+                  }
                   processed.push({
-                    rule: resource,
+                    rule: rule,
                     description: finding.message,
-                    line:
-                      pathParts.length > 1
-                        ? `${pathParts[1]}:${pathParts[2]}`
-                        : finding.path,
+                    line: line,
                     recommendation: finding.rule_solution,
                     severity: finding.severity,
                   });
-                }
-              );
+                });
+              }
             }
           }
           setProcessedResults(processed);
         }
-
+        setTotalRules(rulesCount);
         const issuesCount = countTotalIssues(result, scanType);
         setTotalIssues(issuesCount);
 
@@ -283,203 +392,188 @@ function ReportPage() {
   };
 
   return (
-    <>
-      <Header />
-      <div className="m-4">
-        <Link to="/" className="text-primary-blue hover:underline">
-          &larr; Back to Landing Page
-        </Link>
-      </div>
-      <SectionContainer title="Upload File">
-        <div className="flex gap-4">
-          <input
-            type="file"
-            ref={fileInputRef}
-            onChange={handleFileChange}
-            accept="application/json"
-            className="hidden"
-          />
-          <JaggedBox
-            onDragOver={handleDragOver}
-            onDragLeave={handleDragLeave}
-            onDrop={handleDrop}
-            onClick={handleClick}
-            className="w-[600px] h-[200px] cursor-pointer"
-            innerClassName={isDragOver ? "bg-tertiary-red/50" : ""}
-          >
-            <div className="relative flex flex-col h-full text-center justify-center items-center">
-              {uploadedFile && (
-                <button
-                  onClick={handleRemoveFile}
-                  className="absolute top-4 right-4 text-primary-blue hover:text-secondary-red transition-colors"
-                  aria-label="Remove file"
-                >
-                  <FaTimes size={24} />
-                </button>
-              )}
-              <p className="p-4 font-orbitron text-4xl font-bold uppercase text-quaternary-red">
-                {uploadedFile
-                  ? truncateFileName(uploadedFile.name)
-                  : "drop the file."}
-              </p>
-              {analysisStatus && (
-                <p className="mt-2 text-sm text-primary-blue font-orbitron font-bold tracking-wider">
-                  {analysisStatus}
+    <div className="bg-[#1a0a09] text-stone-200 min-h-screen flex flex-col">
+      <HeaderComponent />
+      <main className="container mx-auto px-4 flex-grow">
+        <div className="m-4">
+          <Link to="/" className="text-sky-400 hover:underline">
+            &larr; Back to Landing Page
+          </Link>
+        </div>
+        <SectionContainerComponent title="Upload File">
+          <div className="flex flex-col md:flex-row gap-4 justify-center items-center md:items-start">
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleFileChange}
+              accept="application/json"
+              className="hidden"
+            />
+            <JaggedBoxComponent
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+              onClick={handleClick}
+              className={`w-full md:w-[600px] h-[200px] cursor-pointer relative ${
+                isDragOver ? "bg-[#4a1c23]" : ""
+              }`}
+            >
+              <div className="relative flex flex-col h-full text-center justify-center items-center">
+                {uploadedFile && (
+                  <button
+                    onClick={handleRemoveFile}
+                    className="absolute top-4 right-4 text-sky-400 hover:text-[#e47c7c] transition-colors"
+                    aria-label="Remove file"
+                  >
+                    <FaTimes size={24} />
+                  </button>
+                )}
+                <p className="p-4 font-orbitron text-4xl font-bold uppercase text-[#e47c7c]">
+                  {uploadedFile
+                    ? truncateFileName(uploadedFile.name)
+                    : "drop the file."}
                 </p>
-              )}
-            </div>
-          </JaggedBox>
+                {analysisStatus && (
+                  <p className="mt-2 text-sm text-sky-400 font-orbitron font-bold tracking-wider">
+                    {analysisStatus}
+                  </p>
+                )}
+              </div>
+            </JaggedBoxComponent>
 
-          <div className="flex flex-col w-[250px] gap-1.5">
-            <JaggedBox className="text-center">
-              <p className="p-4 font-orbitron font-bold text-primary-blue truncate">
-                {uploadedFile ? uploadedFile.name : "No file selected"}
-              </p>
-            </JaggedBox>
-            <JaggedBox className="text-center">
-              <p className="p-4 font-orbitron font-bold text-primary-blue">
-                {uploadedFile
-                  ? `${(uploadedFile.size / 1024).toFixed(2)} KB`
-                  : "File Size"}
-              </p>
-            </JaggedBox>
-
-            <div className="flex-grow flex items-end">
-              <div className="flex w-full gap-1.5">
-                <div
-                  onClick={() => setScanType("quick")}
-                  className="cursor-pointer w-1/2"
-                >
-                  <JaggedBox
-                    className="text-center"
-                    innerClassName={
-                      scanType === "quick" ? "bg-primary-blue" : "bg-black/40"
-                    }
-                  >
-                    <p
-                      className={`p-4 font-orbitron font-bold ${
-                        scanType === "quick"
-                          ? "text-black"
-                          : "text-primary-blue"
-                      }`}
+            <div className="flex flex-col w-full md:w-[250px] gap-1.5">
+              <JaggedBoxComponent className="text-center h-1/3 flex items-center justify-center">
+                <p className="p-4 font-orbitron font-bold text-sky-400 truncate">
+                  {uploadedFile ? uploadedFile.name : "No file selected"}
+                </p>
+              </JaggedBoxComponent>
+              <JaggedBoxComponent className="text-center h-1/3 flex items-center justify-center">
+                <p className="p-4 font-orbitron font-bold text-sky-400">
+                  {uploadedFile
+                    ? `${(uploadedFile.size / 1024).toFixed(2)} KB`
+                    : "File Size"}
+                </p>
+              </JaggedBoxComponent>
+              <div className="flex-grow flex items-end">
+                <div className="flex w-full gap-1.5">
+                  <div onClick={() => setScanType("quick")} className="cursor-pointer w-1/2">
+                    <JaggedBoxComponent
+                      className="text-center h-full"
+                      innerClassName={
+                        scanType === "quick" ? "bg-sky-400" : "bg-[#361519]"
+                      }
                     >
-                      Quick
-                    </p>
-                  </JaggedBox>
-                </div>
-                <div
-                  onClick={() => setScanType("deep")}
-                  className="cursor-pointer w-1/2"
-                >
-                  <JaggedBox
-                    className="text-center"
-                    innerClassName={
-                      scanType === "deep" ? "bg-primary-blue" : "bg-black/40"
-                    }
-                  >
-                    <p
-                      className={`p-4 font-orbitron font-bold ${
-                        scanType === "deep" ? "text-black" : "text-primary-blue"
-                      }`}
+                      <p
+                        className={`p-4 font-orbitron font-bold ${
+                          scanType === "quick" ? "text-[#361519]" : "text-sky-400"
+                        }`}
+                      >
+                        Quick
+                      </p>
+                    </JaggedBoxComponent>
+                  </div>
+                  <div onClick={() => setScanType("deep")} className="cursor-pointer w-1/2">
+                    <JaggedBoxComponent
+                      className="text-center h-full"
+                      innerClassName={
+                        scanType === "deep" ? "bg-sky-400" : "bg-[#361519]"
+                      }
                     >
-                      Deep
-                    </p>
-                  </JaggedBox>
+                      <p
+                        className={`p-4 font-orbitron font-bold ${
+                          scanType === "deep" ? "text-[#361519]" : "text-sky-400"
+                        }`}
+                      >
+                        Deep
+                      </p>
+                    </JaggedBoxComponent>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-        {error && <p className="text-red-500 mt-4 text-center">{error}</p>}
-      </SectionContainer>
+          {error && <p className="text-red-500 mt-4 text-center font-sans">{error}</p>}
+        </SectionContainerComponent>
 
-      {uploadedFile && !isLoading && (
-        <>
-          <SectionContainer title="Analysis Results">
-            <div className="flex gap-24 items-center justify-center">
-              <div className="border-2 border-tertiary-red w-[250px] h-[250px] flex items-center justify-center bg-lighter-black">
-                <div className="relative w-[225px] h-[225px] rounded-full bg-quaternary-red"></div>
-                <div className="absolute w-[180px] h-[180px] rounded-full bg-lighter-black text-quaternary-red font-rajdhani flex items-center justify-center">
+        {uploadedFile && !isLoading && (
+          <SectionContainerComponent title="Analysis Results">
+            <div className="flex flex-col md:flex-row gap-8 items-center justify-center">
+              <div className="relative w-[250px] h-[250px] flex items-center justify-center border-2 border-[#652821] bg-[#361519]">
+                <div className="relative w-[225px] h-[225px] rounded-full bg-[#e47c7c]"></div>
+                <div className="absolute w-[180px] h-[180px] rounded-full bg-[#1a0a09] text-[#e47c7c] font-rajdhani flex flex-col items-center justify-center">
                   <p className="text-5xl font-bold text-center leading-6">
                     {totalIssues}
-                    <br />
-                    <span className="text-4xl ">/{totalRules}</span>
                   </p>
-                  <div
-                    id="point-circle"
-                    className="h-4 w-4 rounded-full bg-secondary-red absolute bottom-35 left-41"
-                  ></div>
-                  <div
-                    id="point-line1"
-                    className="h-0.5 w-6 bg-secondary-red absolute bottom-39 left-43 -rotate-42"
-                  ></div>
-                  <div
-                    id="point-line2"
-                    className="h-0.5 w-36 z-2 bg-secondary-red absolute bottom-[162.9px] left-48 "
-                  ></div>
+                </div>
+                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10">
+                  <div id="point-circle" className="h-4 w-4 rounded-full bg-[#ff7373] absolute -top-[125px] left-[75px]"></div>
+                  <div id="point-line1" className="h-0.5 w-6 bg-[#ff7373] absolute -top-[120px] left-[85px] rotate-[10deg]"></div>
+                  <div id="point-line2" className="h-0.5 w-36 bg-[#ff7373] absolute -top-[115px] left-[105px]"></div>
                 </div>
               </div>
-              <JaggedBox className="h-[250px] w-[600px] font-orbitron text-sm font-bold text-quaternary-red">
-                <p className="p-4 py-18 text-justify">{summaryMessage}</p>
-              </JaggedBox>
+              <JaggedBoxComponent className="h-full w-full md:w-[600px] font-orbitron text-sm font-bold text-[#e47c7c]">
+                <p className="p-4 text-justify">{summaryMessage}</p>
+              </JaggedBoxComponent>
             </div>
 
-            {scanType === "quick" && scanResult && (
-              <>
-                <div className="flex mt-6 font-rajdhani text-primary-blue mb-4 gap-4 ml-16 -mr-8">
-                  <div className="w-[30%] text-3xl border-tertiary-red border-2 leading-none pt-0.5 font-light text-center">
-                    Rule
+            <div className="mt-8 overflow-x-auto">
+              {scanType === "quick" && processedResults.length > 0 && (
+                <>
+                  <div className="flex font-rajdhani text-sky-400 mb-2 gap-4">
+                    <div className="w-[30%] text-2xl md:text-3xl border-[#652821] border-2 p-2 leading-none font-light text-center bg-[#361519]">
+                      Rule
+                    </div>
+                    <div className="w-[40%] text-2xl md:text-3xl border-[#652821] border-2 p-2 leading-none font-light text-center bg-[#361519]">
+                      Resource
+                    </div>
+                    <div className="w-[30%] text-2xl md:text-3xl border-[#652821] border-2 p-2 leading-none font-light text-center bg-[#361519]">
+                      Severity
+                    </div>
                   </div>
-                  <div className="w-[40%] text-3xl border-tertiary-red border-2 leading-none pt-0.5 font-light text-center">
-                    Resource
-                  </div>
-                  <div className="w-[30%] text-3xl border-tertiary-red border-2 leading-none pt-0.5 font-light text-center">
-                    Severity
-                  </div>
-                </div>
-                {processedResults.map((item, index) => (
-                  <VulnerabilityItem
-                    key={index}
-                    scanType="quick"
-                    {...(item as ProcessedQuickResult)}
-                  />
-                ))}
-              </>
-            )}
+                  {processedResults.map((item, index) => (
+                    <VulnerabilityItem
+                      key={index}
+                      scanType="quick"
+                      {...(item as ProcessedQuickResult)}
+                    />
+                  ))}
+                </>
+              )}
 
-            {scanType === "deep" && scanResult && (
-              <>
-                <div className="flex mt-6 font-rajdhani text-primary-blue mb-4 gap-4 ml-16 -mr-8">
-                  <div className="w-[20%] text-3xl border-tertiary-red border-2 leading-none pt-0.5 font-light text-center">
-                    Rule
+              {scanType === "deep" && processedResults.length > 0 && (
+                <>
+                  <div className="flex font-rajdhani text-sky-400 mb-2 gap-4">
+                    <div className="w-[20%] text-2xl md:text-3xl border-[#652821] border-2 p-2 leading-none font-light text-center bg-[#361519]">
+                      Rule
+                    </div>
+                    <div className="w-[25%] text-2xl md:text-3xl border-[#652821] border-2 p-2 leading-none font-light text-center bg-[#361519]">
+                      Description
+                    </div>
+                    <div className="w-[15%] text-2xl md:text-3xl border-[#652821] border-2 p-2 leading-none font-light text-center bg-[#361519]">
+                      Line
+                    </div>
+                    <div className="w-[15%] text-2xl md:text-3xl border-[#652821] border-2 p-2 leading-none font-light text-center bg-[#361519]">
+                      Severity
+                    </div>
+                    <div className="w-[25%] text-2xl md:text-3xl border-[#652821] border-2 p-2 leading-none font-light text-center bg-[#361519]">
+                      Recommendations
+                    </div>
                   </div>
-                  <div className="w-[25%] text-3xl border-tertiary-red border-2 leading-none pt-0.5 font-light text-center">
-                    Description
-                  </div>
-                  <div className="w-[15%] text-3xl border-tertiary-red border-2 leading-none pt-0.5 font-light text-center">
-                    Line
-                  </div>
-                  <div className="w-[15%] text-3xl border-tertiary-red border-2 leading-none pt-0.5 font-light text-center">
-                    Severity
-                  </div>
-                  <div className="w-[25%] text-3xl border-tertiary-red border-2 leading-none pt-0.5 font-light text-center">
-                    Recommendations
-                  </div>
-                </div>
-                {processedResults.map((item, index) => (
-                  <VulnerabilityItem
-                    key={index}
-                    scanType="deep"
-                    {...(item as ProcessedDeepResult)}
-                  />
-                ))}
-              </>
-            )}
-          </SectionContainer>
-          <Footer />
-        </>
-      )}
-    </>
+                  {processedResults.map((item, index) => (
+                    <VulnerabilityItem
+                      key={index}
+                      scanType="deep"
+                      {...(item as ProcessedDeepResult)}
+                    />
+                  ))}
+                </>
+              )}
+            </div>
+          </SectionContainerComponent>
+        )}
+      </main>
+      <FooterComponent className="mt-8" />
+    </div>
   );
 }
 
