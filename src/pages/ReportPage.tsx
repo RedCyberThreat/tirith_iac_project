@@ -9,6 +9,10 @@ import type {
 import { quickScan, deepSearch } from "../api/scan";
 import "../App.css";
 
+// for our syntax highligher in the context
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
+
 type ProcessedQuickResult = {
   resource: string;
   rule: string;
@@ -38,9 +42,15 @@ const HeaderComponent = () => (
         <h1 className="text-4xl text-sky-400 font-bold">IaC - Tirith</h1>
       </div>
       <nav className="flex gap-4 text-sky-400">
-        <a href="#features" className="hover:text-sky-300">Features</a>
-        <a href="#about" className="hover:text-sky-300">About</a>
-        <a href="#cta" className="hover:text-sky-300">Get Started</a>
+        <a href="#features" className="hover:text-sky-300">
+          Features
+        </a>
+        <a href="#about" className="hover:text-sky-300">
+          About
+        </a>
+        <a href="#cta" className="hover:text-sky-300">
+          Get Started
+        </a>
       </nav>
     </div>
   </header>
@@ -54,19 +64,45 @@ const FooterComponent = ({ className }: { className?: string }) => (
 );
 
 // Define the SectionContainer as for the LandingPage
-const SectionContainerComponent = ({ title, children }: { title?: string; children: React.ReactNode }) => (
+const SectionContainerComponent = ({
+  title,
+  children,
+}: {
+  title?: string;
+  children: React.ReactNode;
+}) => (
   <div className="border-2 border-[#652821] p-2 rounded-lg bg-[#361519] bg-opacity-50 shadow-lg my-8">
-    {title && <h2 className="text-3xl font-bold text-sky-400 font-rajdhani text-center mb-4">{title}</h2>}
+    {title && (
+      <h2 className="text-3xl font-bold text-sky-400 font-rajdhani text-center mb-4">
+        {title}
+      </h2>
+    )}
     {children}
   </div>
 );
 
 // Define the JaggedBox component as for the LandingPage
-const JaggedBoxComponent = ({ children, className, type, innerClassName, ...props }: { children: React.ReactNode; className?: string; type?: string; innerClassName?: string; [key: string]: any }) => {
+const JaggedBoxComponent = ({
+  children,
+  className,
+  type,
+  innerClassName,
+  ...props
+}: {
+  children: React.ReactNode;
+  className?: string;
+  type?: string;
+  innerClassName?: string;
+  [key: string]: any;
+}) => {
   const baseClasses = "border-2 border-[#652821] bg-[#361519] p-4";
-  const lighterBg = type === 'lighter' ? 'bg-[#4a1c23]' : '';
+  const lighterBg = type === "lighter" ? "bg-[#4a1c23]" : "";
   const combinedClasses = `${baseClasses} ${lighterBg} ${className} ${innerClassName}`;
-  return <div className={combinedClasses} {...props}>{children}</div>;
+  return (
+    <div className={combinedClasses} {...props}>
+      {children}
+    </div>
+  );
 };
 
 // New/updated VulnerabilityItem component to handle both scan types
@@ -151,6 +187,7 @@ function ReportPage() {
   const [scanResult, setScanResult] = useState<
     QuickScanResponse | DeepSearchResponse | null
   >(null);
+  const [fileContentString, setFileContentString] = useState<string>("");
 
   const countTotalIssues = (
     scanResult: QuickScanResponse | DeepSearchResponse,
@@ -235,6 +272,7 @@ function ReportPage() {
           return;
         }
         const jsonData = JSON.parse(fileContent);
+        setFileContentString(fileContent);
 
         setIsLoading(true);
         setError(null);
@@ -275,7 +313,7 @@ function ReportPage() {
           console.log("Making a deep scan API call with POST method...");
           result = await deepSearch(fileContent);
           if (jsonData && jsonData.Resources) {
-              rulesCount = Object.keys(jsonData.Resources).length;
+            rulesCount = Object.keys(jsonData.Resources).length;
           }
           setScanResult(result);
           const processed: ProcessedDeepResult[] = [];
@@ -350,6 +388,7 @@ function ReportPage() {
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
+    setFileContentString("");
   };
 
   const handleDragOver = (e: DragEvent<HTMLDivElement>) => {
@@ -456,7 +495,10 @@ function ReportPage() {
               </JaggedBoxComponent>
               <div className="flex-grow flex items-end">
                 <div className="flex w-full gap-1.5">
-                  <div onClick={() => setScanType("quick")} className="cursor-pointer w-1/2">
+                  <div
+                    onClick={() => setScanType("quick")}
+                    className="cursor-pointer w-1/2"
+                  >
                     <JaggedBoxComponent
                       className="text-center h-full"
                       innerClassName={
@@ -465,14 +507,19 @@ function ReportPage() {
                     >
                       <p
                         className={`p-4 font-orbitron font-bold ${
-                          scanType === "quick" ? "text-[#361519]" : "text-sky-400"
+                          scanType === "quick"
+                            ? "text-[#361519]"
+                            : "text-sky-400"
                         }`}
                       >
                         Quick
                       </p>
                     </JaggedBoxComponent>
                   </div>
-                  <div onClick={() => setScanType("deep")} className="cursor-pointer w-1/2">
+                  <div
+                    onClick={() => setScanType("deep")}
+                    className="cursor-pointer w-1/2"
+                  >
                     <JaggedBoxComponent
                       className="text-center h-full"
                       innerClassName={
@@ -481,7 +528,9 @@ function ReportPage() {
                     >
                       <p
                         className={`p-4 font-orbitron font-bold ${
-                          scanType === "deep" ? "text-[#361519]" : "text-sky-400"
+                          scanType === "deep"
+                            ? "text-[#361519]"
+                            : "text-sky-400"
                         }`}
                       >
                         Deep
@@ -492,7 +541,9 @@ function ReportPage() {
               </div>
             </div>
           </div>
-          {error && <p className="text-red-500 mt-4 text-center font-sans">{error}</p>}
+          {error && (
+            <p className="text-red-500 mt-4 text-center font-sans">{error}</p>
+          )}
         </SectionContainerComponent>
 
         {uploadedFile && !isLoading && (
@@ -506,9 +557,18 @@ function ReportPage() {
                   </p>
                 </div>
                 <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10">
-                  <div id="point-circle" className="h-4 w-4 rounded-full bg-[#ff7373] absolute -top-[125px] left-[75px]"></div>
-                  <div id="point-line1" className="h-0.5 w-6 bg-[#ff7373] absolute -top-[120px] left-[85px] rotate-[10deg]"></div>
-                  <div id="point-line2" className="h-0.5 w-36 bg-[#ff7373] absolute -top-[115px] left-[105px]"></div>
+                  <div
+                    id="point-circle"
+                    className="h-4 w-4 rounded-full bg-[#ff7373] absolute -top-[125px] left-[75px]"
+                  ></div>
+                  <div
+                    id="point-line1"
+                    className="h-0.5 w-6 bg-[#ff7373] absolute -top-[120px] left-[85px] rotate-[10deg]"
+                  ></div>
+                  <div
+                    id="point-line2"
+                    className="h-0.5 w-36 bg-[#ff7373] absolute -top-[115px] left-[105px]"
+                  ></div>
                 </div>
               </div>
               <JaggedBoxComponent className="h-full w-full md:w-[600px] font-orbitron text-sm font-bold text-[#e47c7c]">
@@ -569,6 +629,25 @@ function ReportPage() {
                 </>
               )}
             </div>
+          </SectionContainerComponent>
+        )}
+        {uploadedFile && !isLoading && (
+          <SectionContainerComponent title="Context">
+            <SyntaxHighlighter
+              language="json"
+              style={vscDarkPlus}
+              showLineNumbers // Enables line numbers
+              wrapLines={true} // Wraps long lines to prevent horizontal scrolling
+              customStyle={{
+                margin: 0,
+                maxHeight: "400px", // Sets a scroll limit
+                border: "2px solid #652821",
+                borderRadius: "0.375rem",
+              }}
+              lineNumberStyle={{ color: "#858585", fontStyle: "italic" }} // Styles the line numbers
+            >
+              {fileContentString}
+            </SyntaxHighlighter>
           </SectionContainerComponent>
         )}
       </main>

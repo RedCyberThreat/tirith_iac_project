@@ -211,7 +211,7 @@ class CustomRdsStorageEncryptedRule(CloudFormationLintRule):
                         RuleMatch(path, f"{name} missing StorageEncrypted=true")
                     )
         return matches
-    
+
 #new rules
 class CustomS3BucketVersioningRule(CloudFormationLintRule):
     id = 'E06'
@@ -763,4 +763,3 @@ class CustomEc2SshFromAnywhereRule(CloudFormationLintRule):
                     path = ['Resources', name, 'Properties', 'SecurityGroupIngress', idx]
                     matches.append(RuleMatch(path, f"{name}: Security group allows SSH from the internet"))
         return matches
-
