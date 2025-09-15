@@ -1,5 +1,5 @@
 import { useState, useRef, type DragEvent, type ChangeEvent } from "react";
-import { FaTimes } from "react-icons/fa";
+import { FaTimes, FaArrowUp } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import type {
   QuickScanResponse,
@@ -70,11 +70,16 @@ const FooterComponent = ({ className }: { className?: string }) => (
 const SectionContainerComponent = ({
   title,
   children,
+  ...props
 }: {
   title?: string;
   children: React.ReactNode;
+  [key: string]: any;
 }) => (
-  <div className="border-2 border-[#652821] p-2 rounded-lg bg-[#361519] bg-opacity-50 shadow-lg my-8">
+  <div
+    {...props}
+    className="border-2 border-[#652821] p-2 rounded-lg bg-[#361519] bg-opacity-50 shadow-lg my-8"
+  >
     {title && (
       <h2 className="text-3xl font-bold text-sky-400 font-rajdhani text-center mb-4">
         {title}
@@ -128,47 +133,65 @@ const VulnerabilityItem = ({
     }
   };
 
+  if (scanType === "quick") {
+    return (
+      <JaggedBoxComponent className="flex w-full">
+        <div className="w-[30%] text-2xl md:text-3xl text-sky-400 p-2 leading-none font-light text-center bg-[#361519]">
+          {(props as ProcessedQuickResult).rule}
+        </div>
+        <div className="w-[40%] text-2xl md:text-3xl text-sky-400 p-2 leading-none font-light text-center bg-[#361519]">
+          {(props as ProcessedQuickResult).resource}
+        </div>
+        <div
+          className={`w-[30%] text-2xl md:text-3xl p-2 leading-none font-light text-center bg-[#361519] ${getSeverityColor(
+            (props as ProcessedQuickResult).severity
+          )}`}
+        >
+          {(props as ProcessedQuickResult).severity}
+        </div>
+      </JaggedBoxComponent>
+    );
+  }
+
+  // Storing this in a variable makes the code much cleaner
+  const deepProps = props as ProcessedDeepResult;
+  const lineNumber = deepProps.line.split(" | ")[0];
+  const isValidLine = lineNumber !== "N/A";
+
   return (
     <div className="flex font-rajdhani text-stone-200 mb-2 gap-4 text-center">
-      {scanType === "quick" ? (
-        <JaggedBoxComponent className="flex w-full">
-          <div className="w-[30%] text-2xl md:text-3xl text-sky-400 p-2 leading-none font-light text-center bg-[#361519]">
-            {(props as ProcessedQuickResult).rule}
-          </div>
-          <div className="w-[40%] text-2xl md:text-3xl text-sky-400 p-2 leading-none font-light text-center bg-[#361519]">
-            {(props as ProcessedQuickResult).resource}
-          </div>
-          <div
-            className={`w-[30%] text-2xl md:text-3xl p-2 leading-none font-light text-center bg-[#361519] ${getSeverityColor(
-              (props as ProcessedQuickResult).severity
-            )}`}
-          >
-            {(props as ProcessedQuickResult).severity}
-          </div>
-        </JaggedBoxComponent>
-      ) : (
-        <JaggedBoxComponent className="flex w-full">
-          <div className="w-[20%] text-2xl md:text-3xl text-sky-400 p-2 leading-none font-light text-center bg-[#361519]">
-            {(props as ProcessedDeepResult).rule}
-          </div>
-          <div className="w-[25%] text-2xl md:text-3xl text-sky-400 p-2 leading-none font-light text-center bg-[#361519]">
-            {(props as ProcessedDeepResult).description}
-          </div>
-          <div className="w-[15%] text-2xl md:text-3xl text-sky-400 p-2 leading-none font-light text-center bg-[#361519]">
-            {(props as ProcessedDeepResult).line}
-          </div>
-          <div
-            className={`w-[15%] text-2xl md:text-3xl p-2 leading-none font-light text-center bg-[#361519] ${getSeverityColor(
-              (props as ProcessedDeepResult).severity
-            )}`}
-          >
-            {(props as ProcessedDeepResult).severity}
-          </div>
-          <div className="w-[25%] text-2xl md:text-3xl text-sky-400 p-2 leading-none font-light text-center bg-[#361519]">
-            {(props as ProcessedDeepResult).recommendation}
-          </div>
-        </JaggedBoxComponent>
-      )}
+      <JaggedBoxComponent className="flex w-full items-center">
+        <div className="w-[20%] flex flex-col items-center justify-center p-2 gap-2">
+          <span className="text-2xl md:text-3xl text-sky-400 leading-none font-light">
+            {deepProps.rule}
+          </span>
+          {isValidLine && (
+            <a
+              href={`#line-${lineNumber}`}
+              className="inline-block mt-1 px-3 py-1 bg-sky-600 text-white rounded-md hover:bg-sky-500 text-xs font-bold transition-colors"
+            >
+              Go to Context
+            </a>
+          )}
+        </div>
+
+        <div className="w-[25%] text-2xl md:text-3xl text-sky-400 p-2 leading-none font-light text-center bg-[#361519]">
+          {deepProps.description}
+        </div>
+        <div className="w-[15%] text-2xl md:text-3xl text-sky-400 p-2 leading-none font-light text-center bg-[#361519]">
+          {deepProps.line}
+        </div>
+        <div
+          className={`w-[15%] text-2xl md:text-3xl p-2 leading-none font-light text-center bg-[#361519] ${getSeverityColor(
+            deepProps.severity
+          )}`}
+        >
+          {deepProps.severity}
+        </div>
+        <div className="w-[25%] text-2xl md:text-3xl text-sky-400 p-2 leading-none font-light text-center bg-[#361519]">
+          {deepProps.recommendation}
+        </div>
+      </JaggedBoxComponent>
     </div>
   );
 };
@@ -293,7 +316,6 @@ function ReportPage() {
         if (scanType === "quick") {
           console.log("Making a quick scan API call with POST method...");
           result = await quickScan(jsonData);
-          // Correctly count the number of individual rule findings
           Object.values(result).forEach((resourceFindings) => {
             resourceFindings.forEach((finding) => {
               rulesCount += Object.keys(finding).length;
@@ -456,6 +478,10 @@ function ReportPage() {
   const minWidth = `${lineCount.toString().length}.25em`;
 
   const getLineProps = (lineNumber: number) => {
+    const props: React.HTMLProps<HTMLElement> = {
+      id: `line-${lineNumber}`,
+    };
+
     const severity = issueLines[lineNumber];
     if (severity) {
       const style: React.CSSProperties = {
@@ -464,18 +490,18 @@ function ReportPage() {
       };
       switch (severity.toLowerCase()) {
         case "high":
-          style.backgroundColor = "rgba(229, 57, 53, 0.2)"; // Faint Red
+          style.backgroundColor = "rgba(229, 57, 53, 0.2)";
           break;
         case "medium":
-          style.backgroundColor = "rgba(251, 192, 45, 0.2)"; // Faint Yellow
+          style.backgroundColor = "rgba(251, 192, 45, 0.2)";
           break;
         case "low":
-          style.backgroundColor = "rgba(76, 175, 80, 0.2)"; // Faint Green
+          style.backgroundColor = "rgba(76, 175, 80, 0.2)";
           break;
       }
-      return { style };
+      props.style = style;
     }
-    return {};
+    return props;
   };
 
   return (
@@ -595,7 +621,10 @@ function ReportPage() {
         </SectionContainerComponent>
 
         {uploadedFile && !isLoading && (
-          <SectionContainerComponent title="Analysis Results">
+          <SectionContainerComponent
+            title="Analysis Results"
+            id="analysis-results"
+          >
             <div className="flex flex-col md:flex-row gap-8 items-center justify-center">
               <div className="relative w-[250px] h-[250px] flex items-center justify-center border-2 border-[#652821] bg-[#361519]">
                 <div className="relative w-[225px] h-[225px] rounded-full bg-[#e47c7c]"></div>
@@ -681,30 +710,41 @@ function ReportPage() {
         )}
         {uploadedFile && !isLoading && (
           <SectionContainerComponent title="Context">
-            <SyntaxHighlighter
-              language="json"
-              style={synthwave84}
-              showLineNumbers
-              wrapLines={true}
-              customStyle={{
-                margin: 0,
-                maxHeight: "700px",
-                border: "2px solid #652821",
-                borderRadius: "0.375rem",
-              }}
-              lineNumberStyle={{
-                color: "#38bdf8",
-                fontStyle: "italic",
-                fontFamily: "orbitron",
-                minWidth: minWidth,
-                paddingRight: "1em",
-                textAlign: "left",
-                userSelect: "none",
-              }}
-              lineProps={getLineProps}
-            >
-              {fileContentString}
-            </SyntaxHighlighter>
+            <div className="relative">
+              <SyntaxHighlighter
+                language="json"
+                style={synthwave84}
+                showLineNumbers
+                wrapLines={true}
+                customStyle={{
+                  margin: 0,
+                  maxHeight: "700px",
+                  border: "2px solid #652821",
+                  borderRadius: "0.375rem",
+                }}
+                lineNumberStyle={{
+                  color: "#38bdf8",
+                  fontStyle: "italic",
+                  fontFamily: "orbitron",
+                  minWidth: minWidth,
+                  paddingRight: "1em",
+                  textAlign: "left",
+                  userSelect: "none",
+                }}
+                lineProps={getLineProps}
+              >
+                {fileContentString}
+              </SyntaxHighlighter>
+
+              <a
+                href="#analysis-results"
+                title="Scroll up to results"
+                className="sticky bottom-5 right-5 z-10 flex items-center gap-2 px-4 py-2 bg-sky-600 text-white rounded-full shadow-lg hover:bg-sky-500 transition-all duration-300"
+              >
+                <FaArrowUp size={14} />
+                <span>Back to Results</span>
+              </a>
+            </div>
           </SectionContainerComponent>
         )}
       </main>
