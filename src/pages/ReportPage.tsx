@@ -191,6 +191,7 @@ function ReportPage() {
     QuickScanResponse | DeepSearchResponse | null
   >(null);
   const [fileContentString, setFileContentString] = useState<string>("");
+  const [issueLines, setIssueLines] = useState<Record<number, string>>({});
 
   const countTotalIssues = (
     scanResult: QuickScanResponse | DeepSearchResponse,
@@ -345,6 +346,21 @@ function ReportPage() {
             }
           }
           setProcessedResults(processed);
+
+          const lineSeverityMap: Record<number, string> = {};
+          if (scanType === "deep") {
+            const deepScanResults = processed.filter(
+              (r): r is ProcessedDeepResult => "line" in r && r.line !== "N/A"
+            );
+
+            for (const result of deepScanResults) {
+              const lineNumber = parseInt(result.line.split(" | ")[0], 10);
+              if (!isNaN(lineNumber)) {
+                lineSeverityMap[lineNumber] = result.severity || "Unclassified";
+              }
+            }
+          }
+          setIssueLines(lineSeverityMap);
         }
         setTotalRules(rulesCount);
         const issuesCount = countTotalIssues(result, scanType);
@@ -393,6 +409,7 @@ function ReportPage() {
       fileInputRef.current.value = "";
     }
     setFileContentString("");
+    setIssueLines({});
   };
 
   const handleDragOver = (e: DragEvent<HTMLDivElement>) => {
@@ -437,6 +454,29 @@ function ReportPage() {
   // for line number colors
   const lineCount = fileContentString.split("\n").length;
   const minWidth = `${lineCount.toString().length}.25em`;
+
+  const getLineProps = (lineNumber: number) => {
+    const severity = issueLines[lineNumber];
+    if (severity) {
+      const style: React.CSSProperties = {
+        display: "block",
+        width: "100%",
+      };
+      switch (severity.toLowerCase()) {
+        case "high":
+          style.backgroundColor = "rgba(229, 57, 53, 0.2)"; // Faint Red
+          break;
+        case "medium":
+          style.backgroundColor = "rgba(251, 192, 45, 0.2)"; // Faint Yellow
+          break;
+        case "low":
+          style.backgroundColor = "rgba(76, 175, 80, 0.2)"; // Faint Green
+          break;
+      }
+      return { style };
+    }
+    return {};
+  };
 
   return (
     <div className="bg-[#1a0a09] text-stone-200 min-h-screen flex flex-col">
@@ -648,7 +688,7 @@ function ReportPage() {
               wrapLines={true}
               customStyle={{
                 margin: 0,
-                maxHeight: "400px",
+                maxHeight: "700px",
                 border: "2px solid #652821",
                 borderRadius: "0.375rem",
               }}
@@ -661,6 +701,7 @@ function ReportPage() {
                 textAlign: "left",
                 userSelect: "none",
               }}
+              lineProps={getLineProps}
             >
               {fileContentString}
             </SyntaxHighlighter>
