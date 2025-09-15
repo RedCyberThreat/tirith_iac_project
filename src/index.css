@@ -3,5 +3,36 @@ body {
 }
 
 html {
-    scroll-behavior: smooth;
+  scroll-behavior: smooth;
+}
+
+/* cool scroll bar */
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #652821 #2d110f;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #2d110f;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #652821;
+  border-radius: 6px;
+  border: 2px solid #2d110f;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: #8a3a2f;
+}
+
+/* fix line numbers */
+
+.linenumber {
+  color: #38bdf8 !important;
 }

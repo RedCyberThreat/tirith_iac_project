@@ -11,7 +11,10 @@ import "../App.css";
 
 // for our syntax highligher in the context
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
+import {
+  synthwave84,
+  okaidia,
+} from "react-syntax-highlighter/dist/esm/styles/prism";
 
 type ProcessedQuickResult = {
   resource: string;
@@ -272,6 +275,7 @@ function ReportPage() {
           return;
         }
         const jsonData = JSON.parse(fileContent);
+
         setFileContentString(fileContent);
 
         setIsLoading(true);
@@ -429,6 +433,10 @@ function ReportPage() {
     const end = name.substring(name.length - 10);
     return `${start}...${end}`;
   };
+
+  // for line number colors
+  const lineCount = fileContentString.split("\n").length;
+  const minWidth = `${lineCount.toString().length}.25em`;
 
   return (
     <div className="bg-[#1a0a09] text-stone-200 min-h-screen flex flex-col">
@@ -635,16 +643,24 @@ function ReportPage() {
           <SectionContainerComponent title="Context">
             <SyntaxHighlighter
               language="json"
-              style={vscDarkPlus}
-              showLineNumbers // Enables line numbers
-              wrapLines={true} // Wraps long lines to prevent horizontal scrolling
+              style={synthwave84}
+              showLineNumbers
+              wrapLines={true}
               customStyle={{
                 margin: 0,
-                maxHeight: "400px", // Sets a scroll limit
+                maxHeight: "400px",
                 border: "2px solid #652821",
                 borderRadius: "0.375rem",
               }}
-              lineNumberStyle={{ color: "#858585", fontStyle: "italic" }} // Styles the line numbers
+              lineNumberStyle={{
+                color: "#38bdf8",
+                fontStyle: "italic",
+                fontFamily: "orbitron",
+                minWidth: minWidth,
+                paddingRight: "1em",
+                textAlign: "left",
+                userSelect: "none",
+              }}
             >
               {fileContentString}
             </SyntaxHighlighter>
