@@ -133,11 +133,20 @@ const VulnerabilityItem = ({
     }
   };
 
+  const truncateRuleName = (name: string, maxLength: number = 25) => {
+    if (name.length <= maxLength) return name;
+    const start = name.substring(0, 20);
+    return `${start}...`;
+  };
+
+  // console.log('rule value:', (props as ProcessedQuickResult).rule);
+  // console.log('type:', typeof((props as ProcessedQuickResult).rule));
+
   if (scanType === "quick") {
     return (
       <JaggedBoxComponent className="flex w-full">
-        <div className="w-[30%] text-2xl md:text-3xl text-sky-400 p-2 leading-none font-light text-center bg-[#361519]">
-          {(props as ProcessedQuickResult).rule}
+        <div className="w-[30%] text-2xl md:text-3xl text-sky-400 p-2 leading-none font-light text-center bg-[#361519] truncate">
+          {truncateRuleName((props as ProcessedQuickResult).rule)}
         </div>
         <div className="w-[40%] text-2xl md:text-3xl text-sky-400 p-2 leading-none font-light text-center bg-[#361519]">
           {(props as ProcessedQuickResult).resource}
@@ -163,7 +172,7 @@ const VulnerabilityItem = ({
       <JaggedBoxComponent className="flex w-full items-center">
         <div className="w-[20%] flex flex-col items-center justify-center p-2 gap-2">
           <span className="text-2xl md:text-3xl text-sky-400 leading-none font-light">
-            {deepProps.rule}
+            {truncateRuleName(deepProps.rule)}
           </span>
           {isValidLine && (
             <JaggedBoxComponent className="pt-0 pb-0 hover:bg-[#632e32] transition-colors cursor-pointer group">
