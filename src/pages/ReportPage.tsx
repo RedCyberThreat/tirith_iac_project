@@ -1,5 +1,5 @@
 import { useState, useRef, type DragEvent, type ChangeEvent } from "react";
-import { FaTimes } from "react-icons/fa";
+import { FaTimes, FaArrowUp } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import type {
   QuickScanResponse,
@@ -8,6 +8,13 @@ import type {
 } from "../types/scan";
 import { quickScan, deepSearch } from "../api/scan";
 import "../App.css";
+
+// for our syntax highligher in the context
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import {
+  synthwave84,
+  okaidia,
+} from "react-syntax-highlighter/dist/esm/styles/prism";
 
 type ProcessedQuickResult = {
   resource: string;
@@ -38,9 +45,15 @@ const HeaderComponent = () => (
         <h1 className="text-4xl text-sky-400 font-bold">IaC - Tirith</h1>
       </div>
       <nav className="flex gap-4 text-sky-400">
-        <a href="#features" className="hover:text-sky-300">Features</a>
-        <a href="#about" className="hover:text-sky-300">About</a>
-        <a href="#cta" className="hover:text-sky-300">Get Started</a>
+        <a href="#features" className="hover:text-sky-300">
+          Features
+        </a>
+        <a href="#about" className="hover:text-sky-300">
+          About
+        </a>
+        <a href="#cta" className="hover:text-sky-300">
+          Get Started
+        </a>
       </nav>
     </div>
   </header>
@@ -54,19 +67,56 @@ const FooterComponent = ({ className }: { className?: string }) => (
 );
 
 // Define the SectionContainer as for the LandingPage
-const SectionContainerComponent = ({ title, children }: { title?: string; children: React.ReactNode }) => (
-  <div className="border-2 border-[#652821] p-2 rounded-lg bg-[#361519] bg-opacity-50 shadow-lg my-8">
-    {title && <h2 className="text-3xl font-bold text-sky-400 font-rajdhani text-center mb-4">{title}</h2>}
+const SectionContainerComponent = ({
+  title,
+  children,
+  className,
+  ...props
+}: {
+  title?: string;
+  children: React.ReactNode;
+  className?: string;
+  [key: string]: any;
+}) => (
+  <div
+    {...props}
+    className={`border-2 border-[#652821] p-2 rounded-lg bg-[#361519] bg-opacity-50 shadow-lg my-8 ${
+      className || ""
+    }`}
+  >
+    {title && (
+      <h2
+        className={`text-3xl font-bold text-sky-400 font-rajdhani text-center mb-4`}
+      >
+        {title}
+      </h2>
+    )}
     {children}
   </div>
 );
 
 // Define the JaggedBox component as for the LandingPage
-const JaggedBoxComponent = ({ children, className, type, innerClassName, ...props }: { children: React.ReactNode; className?: string; type?: string; innerClassName?: string; [key: string]: any }) => {
+const JaggedBoxComponent = ({
+  children,
+  className,
+  type,
+  innerClassName,
+  ...props
+}: {
+  children: React.ReactNode;
+  className?: string;
+  type?: string;
+  innerClassName?: string;
+  [key: string]: any;
+}) => {
   const baseClasses = "border-2 border-[#652821] bg-[#361519] p-4";
-  const lighterBg = type === 'lighter' ? 'bg-[#4a1c23]' : '';
+  const lighterBg = type === "lighter" ? "bg-[#4a1c23]" : "";
   const combinedClasses = `${baseClasses} ${lighterBg} ${className} ${innerClassName}`;
-  return <div className={combinedClasses} {...props}>{children}</div>;
+  return (
+    <div className={combinedClasses} {...props}>
+      {children}
+    </div>
+  );
 };
 
 // New/updated VulnerabilityItem component to handle both scan types
@@ -89,47 +139,76 @@ const VulnerabilityItem = ({
     }
   };
 
+  const truncateRuleName = (name: string, maxLength: number = 25) => {
+    if (name.length <= maxLength) return name;
+    const start = name.substring(0, 20);
+    return `${start}...`;
+  };
+
+  // console.log('rule value:', (props as ProcessedQuickResult).rule);
+  // console.log('type:', typeof((props as ProcessedQuickResult).rule));
+
+  if (scanType === "quick") {
+    return (
+      <JaggedBoxComponent className="flex w-full">
+        <div className="w-[30%] text-2xl md:text-3xl text-sky-400 p-2 leading-none font-light text-center bg-[#361519] truncate">
+          {truncateRuleName((props as ProcessedQuickResult).rule)}
+        </div>
+        <div className="w-[40%] text-2xl md:text-3xl text-sky-400 p-2 leading-none font-light text-center bg-[#361519]">
+          {(props as ProcessedQuickResult).resource}
+        </div>
+        <div
+          className={`w-[30%] text-2xl md:text-3xl p-2 leading-none font-light text-center bg-[#361519] ${getSeverityColor(
+            (props as ProcessedQuickResult).severity
+          )}`}
+        >
+          {(props as ProcessedQuickResult).severity}
+        </div>
+      </JaggedBoxComponent>
+    );
+  }
+
+  // Storing this in a variable makes the code much cleaner
+  const deepProps = props as ProcessedDeepResult;
+  const lineNumber = deepProps.line.split(" | ")[0];
+  const isValidLine = lineNumber !== "N/A";
+
   return (
     <div className="flex font-rajdhani text-stone-200 mb-2 gap-4 text-center">
-      {scanType === "quick" ? (
-        <JaggedBoxComponent className="flex w-full">
-          <div className="w-[30%] text-2xl md:text-3xl text-sky-400 p-2 leading-none font-light text-center bg-[#361519]">
-            {(props as ProcessedQuickResult).rule}
-          </div>
-          <div className="w-[40%] text-2xl md:text-3xl text-sky-400 p-2 leading-none font-light text-center bg-[#361519]">
-            {(props as ProcessedQuickResult).resource}
-          </div>
-          <div
-            className={`w-[30%] text-2xl md:text-3xl p-2 leading-none font-light text-center bg-[#361519] ${getSeverityColor(
-              (props as ProcessedQuickResult).severity
-            )}`}
-          >
-            {(props as ProcessedQuickResult).severity}
-          </div>
-        </JaggedBoxComponent>
-      ) : (
-        <JaggedBoxComponent className="flex w-full">
-          <div className="w-[20%] text-2xl md:text-3xl text-sky-400 p-2 leading-none font-light text-center bg-[#361519]">
-            {(props as ProcessedDeepResult).rule}
-          </div>
-          <div className="w-[25%] text-2xl md:text-3xl text-sky-400 p-2 leading-none font-light text-center bg-[#361519]">
-            {(props as ProcessedDeepResult).description}
-          </div>
-          <div className="w-[15%] text-2xl md:text-3xl text-sky-400 p-2 leading-none font-light text-center bg-[#361519]">
-            {(props as ProcessedDeepResult).line}
-          </div>
-          <div
-            className={`w-[15%] text-2xl md:text-3xl p-2 leading-none font-light text-center bg-[#361519] ${getSeverityColor(
-              (props as ProcessedDeepResult).severity
-            )}`}
-          >
-            {(props as ProcessedDeepResult).severity}
-          </div>
-          <div className="w-[25%] text-2xl md:text-3xl text-sky-400 p-2 leading-none font-light text-center bg-[#361519]">
-            {(props as ProcessedDeepResult).recommendation}
-          </div>
-        </JaggedBoxComponent>
-      )}
+      <JaggedBoxComponent className="flex w-full items-center">
+        <div className="w-[20%] flex flex-col items-center justify-center p-2 gap-2">
+          <span className="text-2xl md:text-3xl text-sky-400 leading-none font-light">
+            {truncateRuleName(deepProps.rule)}
+          </span>
+          {isValidLine && (
+            <JaggedBoxComponent className="pt-0 pb-0 hover:bg-[#632e32] transition-colors cursor-pointer group">
+              <a
+                href={`#line-${lineNumber}`}
+                className="inline-block mt-1 -px-10 text-[#45b5fc] text-xs font-bold group-hover:text-white transition-colors"
+              >
+                Go to Context
+              </a>
+            </JaggedBoxComponent>
+          )}
+        </div>
+
+        <div className="w-[25%] text-2xl md:text-3xl text-sky-400 p-2 leading-none font-light text-center bg-[#361519]">
+          {deepProps.description}
+        </div>
+        <div className="w-[15%] text-2xl md:text-3xl text-sky-400 p-2 leading-none font-light text-center bg-[#361519]">
+          {deepProps.line}
+        </div>
+        <div
+          className={`w-[15%] text-2xl md:text-3xl p-2 leading-none font-light text-center bg-[#361519] ${getSeverityColor(
+            deepProps.severity
+          )}`}
+        >
+          {deepProps.severity}
+        </div>
+        <div className="w-[25%] text-2xl md:text-3xl text-sky-400 p-2 leading-none font-light text-center bg-[#361519]">
+          {deepProps.recommendation}
+        </div>
+      </JaggedBoxComponent>
     </div>
   );
 };
@@ -151,6 +230,8 @@ function ReportPage() {
   const [scanResult, setScanResult] = useState<
     QuickScanResponse | DeepSearchResponse | null
   >(null);
+  const [fileContentString, setFileContentString] = useState<string>("");
+  const [issueLines, setIssueLines] = useState<Record<number, string>>({});
 
   const countTotalIssues = (
     scanResult: QuickScanResponse | DeepSearchResponse,
@@ -236,6 +317,8 @@ function ReportPage() {
         }
         const jsonData = JSON.parse(fileContent);
 
+        setFileContentString(fileContent);
+
         setIsLoading(true);
         setError(null);
         setTotalIssues(0);
@@ -250,7 +333,6 @@ function ReportPage() {
         if (scanType === "quick") {
           console.log("Making a quick scan API call with POST method...");
           result = await quickScan(jsonData);
-          // Correctly count the number of individual rule findings
           Object.values(result).forEach((resourceFindings) => {
             resourceFindings.forEach((finding) => {
               rulesCount += Object.keys(finding).length;
@@ -275,7 +357,7 @@ function ReportPage() {
           console.log("Making a deep scan API call with POST method...");
           result = await deepSearch(fileContent);
           if (jsonData && jsonData.Resources) {
-              rulesCount = Object.keys(jsonData.Resources).length;
+            rulesCount = Object.keys(jsonData.Resources).length;
           }
           setScanResult(result);
           const processed: ProcessedDeepResult[] = [];
@@ -303,6 +385,21 @@ function ReportPage() {
             }
           }
           setProcessedResults(processed);
+
+          const lineSeverityMap: Record<number, string> = {};
+          if (scanType === "deep") {
+            const deepScanResults = processed.filter(
+              (r): r is ProcessedDeepResult => "line" in r && r.line !== "N/A"
+            );
+
+            for (const result of deepScanResults) {
+              const lineNumber = parseInt(result.line.split(" | ")[0], 10);
+              if (!isNaN(lineNumber)) {
+                lineSeverityMap[lineNumber] = result.severity || "Unclassified";
+              }
+            }
+          }
+          setIssueLines(lineSeverityMap);
         }
         setTotalRules(rulesCount);
         const issuesCount = countTotalIssues(result, scanType);
@@ -350,6 +447,8 @@ function ReportPage() {
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
+    setFileContentString("");
+    setIssueLines({});
   };
 
   const handleDragOver = (e: DragEvent<HTMLDivElement>) => {
@@ -389,6 +488,38 @@ function ReportPage() {
     const start = name.substring(0, 8);
     const end = name.substring(name.length - 10);
     return `${start}...${end}`;
+  };
+
+  // for line number colors
+  const lineCount = fileContentString.split("\n").length;
+  const minWidth = `${lineCount.toString().length}.25em`;
+
+  const getLineProps = (lineNumber: number) => {
+    const props: React.HTMLProps<HTMLElement> = {
+      id: `line-${lineNumber}`,
+      className: "scroll-mt-50",
+    };
+
+    const severity = issueLines[lineNumber];
+    if (severity) {
+      const style: React.CSSProperties = {
+        display: "block",
+        width: "100%",
+      };
+      switch (severity.toLowerCase()) {
+        case "high":
+          style.backgroundColor = "rgba(229, 57, 53, 0.2)";
+          break;
+        case "medium":
+          style.backgroundColor = "rgba(251, 192, 45, 0.2)";
+          break;
+        case "low":
+          style.backgroundColor = "rgba(76, 175, 80, 0.2)";
+          break;
+      }
+      props.style = style;
+    }
+    return props;
   };
 
   return (
@@ -456,7 +587,10 @@ function ReportPage() {
               </JaggedBoxComponent>
               <div className="flex-grow flex items-end">
                 <div className="flex w-full gap-1.5">
-                  <div onClick={() => setScanType("quick")} className="cursor-pointer w-1/2">
+                  <div
+                    onClick={() => setScanType("quick")}
+                    className="cursor-pointer w-1/2"
+                  >
                     <JaggedBoxComponent
                       className="text-center h-full"
                       innerClassName={
@@ -465,14 +599,19 @@ function ReportPage() {
                     >
                       <p
                         className={`p-4 font-orbitron font-bold ${
-                          scanType === "quick" ? "text-[#361519]" : "text-sky-400"
+                          scanType === "quick"
+                            ? "text-[#361519]"
+                            : "text-sky-400"
                         }`}
                       >
                         Quick
                       </p>
                     </JaggedBoxComponent>
                   </div>
-                  <div onClick={() => setScanType("deep")} className="cursor-pointer w-1/2">
+                  <div
+                    onClick={() => setScanType("deep")}
+                    className="cursor-pointer w-1/2"
+                  >
                     <JaggedBoxComponent
                       className="text-center h-full"
                       innerClassName={
@@ -481,7 +620,9 @@ function ReportPage() {
                     >
                       <p
                         className={`p-4 font-orbitron font-bold ${
-                          scanType === "deep" ? "text-[#361519]" : "text-sky-400"
+                          scanType === "deep"
+                            ? "text-[#361519]"
+                            : "text-sky-400"
                         }`}
                       >
                         Deep
@@ -492,11 +633,16 @@ function ReportPage() {
               </div>
             </div>
           </div>
-          {error && <p className="text-red-500 mt-4 text-center font-sans">{error}</p>}
+          {error && (
+            <p className="text-red-500 mt-4 text-center font-sans">{error}</p>
+          )}
         </SectionContainerComponent>
 
         {uploadedFile && !isLoading && (
-          <SectionContainerComponent title="Analysis Results">
+          <SectionContainerComponent
+            title="Analysis Results"
+            id="analysis-results"
+          >
             <div className="flex flex-col md:flex-row gap-8 items-center justify-center">
               <div className="relative w-[250px] h-[250px] flex items-center justify-center border-2 border-[#652821] bg-[#361519]">
                 <div className="relative w-[225px] h-[225px] rounded-full bg-[#e47c7c]"></div>
@@ -506,9 +652,18 @@ function ReportPage() {
                   </p>
                 </div>
                 <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10">
-                  <div id="point-circle" className="h-4 w-4 rounded-full bg-[#ff7373] absolute -top-[125px] left-[75px]"></div>
-                  <div id="point-line1" className="h-0.5 w-6 bg-[#ff7373] absolute -top-[120px] left-[85px] rotate-[10deg]"></div>
-                  <div id="point-line2" className="h-0.5 w-36 bg-[#ff7373] absolute -top-[115px] left-[105px]"></div>
+                  {/* <div
+                    id="point-circle"
+                    className="h-4 w-4 rounded-full bg-[#45b5fc] absolute -top-[70px] left-[75px]"
+                  ></div>
+                  <div
+                    id="point-line1"
+                    className="h-0.5 w-6 bg-[#45b5fc] absolute -top-[115px] left-[85px] rotate-[10deg]"
+                  ></div>
+                  <div
+                    id="point-line2"
+                    className="h-0.5 w-36 bg-[#45b5fc] absolute -top-[115px] left-[105px]"
+                  ></div> */}
                 </div>
               </div>
               <JaggedBoxComponent className="h-full w-full md:w-[600px] font-orbitron text-sm font-bold text-[#e47c7c]">
@@ -568,6 +723,46 @@ function ReportPage() {
                   ))}
                 </>
               )}
+            </div>
+          </SectionContainerComponent>
+        )}
+        {uploadedFile && !isLoading && (
+          <SectionContainerComponent title="Context" className="scroll-mt-24">
+            <div className="relative">
+              <SyntaxHighlighter
+                language="json"
+                style={synthwave84}
+                showLineNumbers
+                wrapLines={true}
+                customStyle={{
+                  margin: 0,
+                  maxHeight: "700px",
+                  border: "2px solid #652821",
+                  borderRadius: "0.375rem",
+                }}
+                lineNumberStyle={{
+                  color: "#38bdf8",
+                  fontStyle: "italic",
+                  fontFamily: "orbitron",
+                  minWidth: minWidth,
+                  paddingRight: "1em",
+                  textAlign: "left",
+                  userSelect: "none",
+                }}
+                lineProps={getLineProps}
+              >
+                {fileContentString}
+              </SyntaxHighlighter>
+              <JaggedBoxComponent className="absolute bottom-5 right-5 z-10 py-0 hover:bg-[#632e32] transition-colors cursor-pointer group">
+                <a
+                  href="#analysis-results"
+                  title="Scroll up to results"
+                  className="text-[#45b5fc] group-hover:text-white flex items-center justify-center gap-2 py-2 transition-colors font-bold"
+                >
+                  <FaArrowUp className="mb-0.5" size={14} />
+                  <span>Back to Results</span>
+                </a>
+              </JaggedBoxComponent>
             </div>
           </SectionContainerComponent>
         )}
