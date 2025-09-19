@@ -70,18 +70,24 @@ const FooterComponent = ({ className }: { className?: string }) => (
 const SectionContainerComponent = ({
   title,
   children,
+  className,
   ...props
 }: {
   title?: string;
   children: React.ReactNode;
+  className?: string;
   [key: string]: any;
 }) => (
   <div
     {...props}
-    className="border-2 border-[#652821] p-2 rounded-lg bg-[#361519] bg-opacity-50 shadow-lg my-8"
+    className={`border-2 border-[#652821] p-2 rounded-lg bg-[#361519] bg-opacity-50 shadow-lg my-8 ${
+      className || ""
+    }`}
   >
     {title && (
-      <h2 className="text-3xl font-bold text-sky-400 font-rajdhani text-center mb-4">
+      <h2
+        className={`text-3xl font-bold text-sky-400 font-rajdhani text-center mb-4`}
+      >
         {title}
       </h2>
     )}
@@ -491,6 +497,7 @@ function ReportPage() {
   const getLineProps = (lineNumber: number) => {
     const props: React.HTMLProps<HTMLElement> = {
       id: `line-${lineNumber}`,
+      className: "scroll-mt-50",
     };
 
     const severity = issueLines[lineNumber];
@@ -720,7 +727,7 @@ function ReportPage() {
           </SectionContainerComponent>
         )}
         {uploadedFile && !isLoading && (
-          <SectionContainerComponent title="Context">
+          <SectionContainerComponent title="Context" className="scroll-mt-24">
             <div className="relative">
               <SyntaxHighlighter
                 language="json"
