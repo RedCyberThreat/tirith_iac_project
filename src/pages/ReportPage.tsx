@@ -166,12 +166,14 @@ const VulnerabilityItem = ({
             {deepProps.rule}
           </span>
           {isValidLine && (
-            <a
-              href={`#line-${lineNumber}`}
-              className="inline-block mt-1 px-3 py-1 bg-sky-600 text-white rounded-md hover:bg-sky-500 text-xs font-bold transition-colors"
-            >
-              Go to Context
-            </a>
+            <JaggedBoxComponent className="pt-0 pb-0 hover:bg-[#632e32] transition-colors cursor-pointer group">
+              <a
+                href={`#line-${lineNumber}`}
+                className="inline-block mt-1 -px-10 text-[#45b5fc] text-xs font-bold group-hover:text-white transition-colors"
+              >
+                Go to Context
+              </a>
+            </JaggedBoxComponent>
           )}
         </div>
 
@@ -634,18 +636,18 @@ function ReportPage() {
                   </p>
                 </div>
                 <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10">
-                  <div
+                  {/* <div
                     id="point-circle"
-                    className="h-4 w-4 rounded-full bg-[#ff7373] absolute -top-[125px] left-[75px]"
+                    className="h-4 w-4 rounded-full bg-[#45b5fc] absolute -top-[70px] left-[75px]"
                   ></div>
                   <div
                     id="point-line1"
-                    className="h-0.5 w-6 bg-[#ff7373] absolute -top-[120px] left-[85px] rotate-[10deg]"
+                    className="h-0.5 w-6 bg-[#45b5fc] absolute -top-[115px] left-[85px] rotate-[10deg]"
                   ></div>
                   <div
                     id="point-line2"
-                    className="h-0.5 w-36 bg-[#ff7373] absolute -top-[115px] left-[105px]"
-                  ></div>
+                    className="h-0.5 w-36 bg-[#45b5fc] absolute -top-[115px] left-[105px]"
+                  ></div> */}
                 </div>
               </div>
               <JaggedBoxComponent className="h-full w-full md:w-[600px] font-orbitron text-sm font-bold text-[#e47c7c]">
@@ -735,15 +737,16 @@ function ReportPage() {
               >
                 {fileContentString}
               </SyntaxHighlighter>
-
-              <a
-                href="#analysis-results"
-                title="Scroll up to results"
-                className="sticky bottom-5 right-5 z-10 flex items-center gap-2 px-4 py-2 bg-sky-600 text-white rounded-full shadow-lg hover:bg-sky-500 transition-all duration-300"
-              >
-                <FaArrowUp size={14} />
-                <span>Back to Results</span>
-              </a>
+              <JaggedBoxComponent className="absolute bottom-5 right-5 z-10 py-0 hover:bg-[#632e32] transition-colors cursor-pointer group">
+                <a
+                  href="#analysis-results"
+                  title="Scroll up to results"
+                  className="text-[#45b5fc] group-hover:text-white flex items-center justify-center gap-2 py-2 transition-colors font-bold"
+                >
+                  <FaArrowUp className="mb-0.5" size={14} />
+                  <span>Back to Results</span>
+                </a>
+              </JaggedBoxComponent>
             </div>
           </SectionContainerComponent>
         )}
