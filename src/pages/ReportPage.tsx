@@ -11,10 +11,7 @@ import "../App.css";
 
 // for our syntax highligher in the context
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import {
-  synthwave84,
-  okaidia,
-} from "react-syntax-highlighter/dist/esm/styles/prism";
+import { synthwave84 } from "react-syntax-highlighter/dist/esm/styles/prism";
 
 type ProcessedQuickResult = {
   resource: string;
@@ -221,13 +218,13 @@ function ReportPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [analysisStatus, setAnalysisStatus] = useState<string | null>(null);
-  const [totalRules, setTotalRules] = useState(0);
+  const [, setTotalRules] = useState(0);
   const [totalIssues, setTotalIssues] = useState(0);
   const [summaryMessage, setSummaryMessage] = useState("");
   const [processedResults, setProcessedResults] = useState<ProcessedResult[]>(
     []
   );
-  const [scanResult, setScanResult] = useState<
+  const [, setScanResult] = useState<
     QuickScanResponse | DeepSearchResponse | null
   >(null);
   const [fileContentString, setFileContentString] = useState<string>("");
