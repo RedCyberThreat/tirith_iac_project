@@ -51,6 +51,8 @@ def generate_deepsearch_result(lint_results: list):
             #identiifyng the values
             if len(lint_results[j].path) >= 4:
                 property_name_1 = severity_evaluation(str(lint_results[j].path[3]))
+                
+                #Add logic for number issue
                 if type(lint_results[j].path[3]) == int:
                     lint_results[j].path[3] = "ListElementType"
             else:
