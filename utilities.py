@@ -14,7 +14,7 @@ def severity_evaluation(rule):
                     "logging", "audit", "kms", "encrypted", "group", "az", "property", "policies"}
 
     low_severity = {"naming", "tag", "versioning", "backup", "idle", "default", "description",
-                "engine", "0", "1", "2"}
+                "engine", "0", "1", "2", "listelement"}
 
     rule_lower = rule.lower()
     #check for high severity keywords

@@ -51,6 +51,8 @@ def generate_deepsearch_result(lint_results: list):
             #identiifyng the values
             if len(lint_results[j].path) >= 4:
                 property_name_1 = severity_evaluation(str(lint_results[j].path[3]))
+                if type(lint_results[j].path[3]) == int:
+                    lint_results[j].path[3] = "ListElementType"
             else:
                 property_name_1 = severity_evaluation("UnknownProperty")
                 
@@ -74,7 +76,7 @@ def generate_deepsearch_result(lint_results: list):
         resource_name = str(match.path[0])
 
         if len(match.path) >= 4:
-            property_name = str(match.path[3])
+            property_name = str(match.path[3])        
         else:
             property_name = "UnknownProperty"
 
