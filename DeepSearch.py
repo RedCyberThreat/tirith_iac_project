@@ -65,7 +65,8 @@ def generate_deepsearch_result(lint_results: list):
                 lint_results[j] = lint_results[j + 1]
                 lint_results[j + 1] = temp_val
             
-         
+
+    #creating info object
     for match in lint_results:
         if not match.path or len(match.path) < 2:
             continue

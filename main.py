@@ -1,16 +1,18 @@
-from flask import Flask, request
+from flask import Flask, request, send_from_directory
 from QuickScan import threat_check
 from DeepSearch import generate_deepsearch_result, lint_cloudformation_template
 from utilities import save_file, delete_folder
+import os
 
 
 # fix CORS
 from flask_cors import CORS
 
 
-app = Flask(__name__)
+#IMPORTANT -> BEFORE RUNNING THE CODE YOU HAVE TO BUILD THE VITE PROJECT (npm run build)
+app = Flask(__name__, static_folder='./dist')
 
-CORS(app, origins=["http://localhost:5173"], supports_credentials=True)
+CORS(app, resources={r"/api/*": {"origins": "*", "methods": ["GET", "POST"], "allow_headers": ["Content-Type", "Authorization"]}})
 
 #endpoint to retrieve the informations relative to the quickscan output
 @app.route("/api/quickscan", methods=["POST"])
@@ -38,6 +40,20 @@ def deep_search():
 
     return return_json
 
+#frontend route
+@app.route('/', defaults={'path': ''})
+@app.route('/<path:path>')
+def serve(path):
+    #add a check to ignore API routes
+    if path.startswith('api/'):
+        return
+
+    #if the file exixt return it else return index
+    if path != "" and os.path.exists(os.path.join(app.static_folder, path)):
+        return send_from_directory(app.static_folder, path)
+    else:
+        return send_from_directory(app.static_folder, 'index.html')
+
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True, port=8080)
