@@ -229,6 +229,7 @@ function ReportPage() {
   >(null);
   const [fileContentString, setFileContentString] = useState<string>("");
   const [issueLines, setIssueLines] = useState<Record<number, string>>({});
+  const [threatLevel, setThreatLevel] = useState<string>("");
 
   const countTotalIssues = (
     scanResult: QuickScanResponse | DeepSearchResponse,
@@ -299,6 +300,8 @@ function ReportPage() {
     } else if (severityCounts.Medium > 0 || issueRatio > 0.2) {
       level = "Discrete";
     }
+
+    setThreatLevel(level);
 
     return `Your CloudFormation template is considered ${level}. You have ${severityCounts.Low} low issues, ${severityCounts.Medium} medium issues, ${severityCounts.High} high issues, and ${severityCounts.Unclassified} unclassified issues.`;
   };
@@ -642,9 +645,25 @@ function ReportPage() {
           >
             <div className="flex flex-col md:flex-row gap-8 items-center justify-center">
               <div className="relative w-[250px] h-[250px] flex items-center justify-center border-2 border-[#652821] bg-[#361519]">
-                <div className="relative w-[225px] h-[225px] rounded-full bg-[#e47c7c]"></div>
+                <div
+                  className={`relative w-[225px] h-[225px] rounded-full ${
+                    threatLevel === "Safe"
+                      ? "bg-[#b9ffa9]"
+                      : threatLevel === "Discrete"
+                      ? "bg-[#e6d595]"
+                      : "bg-[#f19e94]"
+                  }`}
+                ></div>
                 <div className="absolute w-[180px] h-[180px] rounded-full bg-[#1a0a09] text-[#e47c7c] font-rajdhani flex flex-col items-center justify-center">
-                  <p className="text-5xl font-bold text-center leading-6">
+                  <p
+                    className={`text-5xl font-bold text-center leading-6 ${
+                      threatLevel === "Safe"
+                        ? "text-[#b9ffa9]"
+                        : threatLevel === "Discrete"
+                        ? "text-[#e6d595]"
+                        : "text-[#f19e94]"
+                    }`}
+                  >
                     {totalIssues}
                   </p>
                 </div>
@@ -663,7 +682,15 @@ function ReportPage() {
                   ></div> */}
                 </div>
               </div>
-              <JaggedBoxComponent className="h-full w-full md:w-[600px] font-orbitron text-sm font-bold text-[#e47c7c]">
+              <JaggedBoxComponent
+                className={`h-full w-full md:w-[600px] font-orbitron text-sm font-bold ${
+                  threatLevel === "Safe"
+                    ? "text-[#b9ffa9]"
+                    : threatLevel === "Discrete"
+                    ? "text-[#e6d595]"
+                    : "text-[#f19e94]"
+                }`}
+              >
                 <p className="p-4 text-justify">{summaryMessage}</p>
               </JaggedBoxComponent>
             </div>
