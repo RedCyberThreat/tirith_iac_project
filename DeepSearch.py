@@ -34,7 +34,7 @@ def lint_cloudformation_template(data):
 
 
 def generate_deepsearch_result(lint_results: list):
-    
+
     grouped_output = {}
 
     if lint_results is None:
@@ -77,7 +77,7 @@ def generate_deepsearch_result(lint_results: list):
             property_name = str(match.path[3])
         else:
             property_name = "UnknownProperty"
-            
+
         path_to_calculate_line = create_path_for_coordinate_resources(match.path)
         
         finding = {

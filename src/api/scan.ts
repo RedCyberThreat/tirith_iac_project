@@ -1,3 +1,5 @@
+// tirith-iac-security-scanner/src/api/scan.ts
+
 import api from "./axiosInstance";
 import type { QuickScanResponse, DeepSearchResponse } from "../types/scan";
 
@@ -8,7 +10,11 @@ export async function quickScan(data: object): Promise<QuickScanResponse> {
 }
 
 // Call /api/deepsearch
-export async function deepSearch(data: object): Promise<DeepSearchResponse> {
-  const res = await api.post<DeepSearchResponse>("/api/deepsearch", data);
+export async function deepSearch(data: string): Promise<DeepSearchResponse> {
+  const res = await api.post<DeepSearchResponse>("/api/deepsearch", data, {
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
   return res.data;
 }
