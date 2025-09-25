@@ -1,14 +1,120 @@
 @import url("https://fonts.googleapis.com/css2?family=Orbitron:wght@400..900&family=Rajdhani:wght@300;400;500;600;700&display=swap");
 @import "tailwindcss";
 
-@theme {
-  --color-primary-blue: #a4fbff;
-  --color-primary-red: #310f0e;
-  --color-secondary-red: #f75049;
-  --color-tertiary-red: #451b16;
-  --color-quaternary-red: #f19e94;
-  --color-light-black: #0d0d12;
-  --color-lighter-black: #0d0d16;
-  --font-orbitron: "Orbitron", sans-serif;
-  --font-rajdhani: "Rajdhani", sans-serif;
+/* --- Preloader Animations --- */
+
+/* The scanner beam */
+@keyframes scan-beam {
+  0% { transform: translateX(-120%) skewX(-30deg); opacity: 0.5; }
+  100% { transform: translateX(120%) skewX(-30deg); opacity: 1; }
+}
+
+/* Ignition for the two side beacons */
+@keyframes beacon-power-up {
+  0% { opacity: 0; transform: scale(0.5); }
+  30% {
+    opacity: 1;
+    transform: scale(1.8);
+    fill: #ffffff;
+    filter: drop-shadow(0 0 10px #ffffff) drop-shadow(0 0 18px #ffffff);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.1);
+    fill: #fc8545;
+    filter: drop-shadow(0 0 6px #fc8545) drop-shadow(0 0 12px #fc8545);
+  }
+  100% {
+    opacity: 0.8;
+    transform: scale(1);
+    fill: #fc8545;
+    filter: drop-shadow(0 0 3px #fc8545);
+  }
+}
+
+/* A much bigger ignition for the central beacon - The Eye of Sauron :) */
+@keyframes eye-ignition {
+  0% { opacity: 0; transform: scale(0.5); }
+  30% {
+    opacity: 1;
+    transform: scale(3.5);
+    fill: #ffffff;
+    filter: drop-shadow(0 0 20px #ffffff) drop-shadow(0 0 40px #ffffff);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.5);
+    fill: #fc4545;
+    filter: drop-shadow(0 0 15px #fc4545) drop-shadow(0 0 30px #fc4545);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1.4);
+    fill: #fc4545;
+    filter: drop-shadow(0 0 10px #fc4545);
+  }
+}
+
+/* A subtle, continuous pulse for the lit side beacons */
+@keyframes pulse-beacon {
+  0%, 100% { opacity: 0.8; filter: drop-shadow(0 0 3px #fc8545); }
+  50% { opacity: 1; filter: drop-shadow(0 0 6px #fc8545); }
+}
+
+/* A more pronounced, ominous pulse for the central eye */
+@keyframes pulse-eye {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1.4);
+    filter: drop-shadow(0 0 10px #fc4545);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.45);
+    filter: drop-shadow(0 0 18px #fc4545);
+  }
+}
+
+/* A subtle screen shake for the main ignition moment */
+@keyframes screenshake {
+  0%, 100% { transform: translate(0, 0); }
+  25% { transform: translate(-1px, 1px); }
+  50% { transform: translate(1px, -1px); }
+  75% { transform: translate(-1px, -1px); }
+}
+
+.preloader-container.shake {
+  animation: screenshake 0.3s ease-in-out;
+}
+
+.beacon, .eye {
+  opacity: 0;
+}
+
+.beacon.lit {
+  animation: beacon-power-up 1s ease-out forwards, 
+             pulse-beacon 2s infinite 1s; /* Start pulsing after ignition */
+}
+
+.eye.lit {
+  animation: eye-ignition 1.2s ease-out forwards,
+             pulse-eye 1.5s infinite 1.2s; /* Start pulsing after ignition */
+}
+
+.scanner-beam {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 25%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(252, 69, 69, 0.15),
+    rgba(252, 69, 69, 0.4),
+    rgba(252, 69, 69, 0.15),
+    transparent
+  );
+  animation: scan-beam 2.5s ease-in-out forwards;
+  animation-delay: 0.5s;
 }

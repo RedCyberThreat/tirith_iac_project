@@ -34,32 +34,31 @@ const HeaderComponent = () => (
   <header className="bg-[#2d110f] p-4 font-rajdhani">
     <div className="container mx-auto flex justify-between items-center">
       <div className="flex items-center gap-3">
-        <div className="flex flex-col items-center justify-center w-12 h-12 gap-1 rounded-full bg-sky-500 ">
-          <span className="block w-8 h-1.5 bg-red-800 rounded-full"></span>
-          <span className="block w-8 h-1.5 bg-red-800 rounded-full"></span>
-          <span className="block w-8 h-1.5 bg-red-800 rounded-full"></span>
-        </div>
-        <h1 className="text-4xl text-sky-400 font-bold">IaC - Tirith</h1>
+          <div className="flex flex-col items-center justify-center w-12 h-12 gap-1 rounded-full bg-sky-500 ">
+              <span className="block w-8 h-1.5 bg-red-800 rounded-full"></span>
+              <span className="block w-8 h-1.5 bg-red-800 rounded-full"></span>
+              <span className="block w-8 h-1.5 bg-red-800 rounded-full"></span>
+          </div>
+          <h1 className="text-4xl text-sky-400 font-bold">IaC - Tirith</h1>
       </div>
       <nav className="flex gap-4 text-sky-400">
-        <a href="#features" className="hover:text-sky-300">
-          Features
-        </a>
-        <a href="#about" className="hover:text-sky-300">
-          About
-        </a>
-        <a href="#cta" className="hover:text-sky-300">
-          Get Started
-        </a>
+        <Link to="/#features" className="hover:text-sky-300">Features</Link>
+        <Link to="/#about" className="hover:text-sky-300">About</Link>
+        <Link to="/#cta" className="hover:text-sky-300">Get Started</Link>
       </nav>
     </div>
   </header>
 );
 
-// Define the Footer component LandingPage-like
+// Footer component using original color scheme
 const FooterComponent = ({ className }: { className?: string }) => (
   <footer className={`bg-[#2d110f] text-center text-sky-400 p-4 ${className}`}>
     <p>&copy; 2025 IaC - Tirith. All rights reserved.</p>
+    <div className="mt-2 text-sm">
+      <Link to="/terms-and-conditions" className="hover:text-sky-300">
+        Terms & Conditions
+      </Link>
+    </div>
   </footer>
 );
 

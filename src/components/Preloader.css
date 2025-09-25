@@ -1,0 +1,77 @@
+@keyframes beacon-light {
+  0% {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.2);
+    filter: drop-shadow(0 0 8px #45b5fc) drop-shadow(0 0 15px #45b5fc);
+  }
+  100% {
+    opacity: 0.7;
+    transform: scale(1);
+    filter: drop-shadow(0 0 3px #45b5fc);
+  }
+}
+
+@keyframes beacon-text-fade-in {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Base styles for the beacons */
+.beacon {
+  fill: #45b5fc; /* Default off color or very dim */
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+}
+
+/* Styles for a 'lit' beacon, applying the animation */
+.beacon.lit {
+  animation: beacon-light 1s ease-out forwards;
+}
+
+/* Specific delays for each beacon to create a sequence */
+.beacon:nth-child(2).lit {
+  animation-delay: 0.1s;
+}
+
+.beacon:nth-child(3).lit {
+  animation-delay: 0.2s;
+}
+
+/* Styles for the brand text when it becomes active */
+.beacon-text.active {
+  animation: beacon-text-fade-in 0.8s ease-out forwards;
+  animation-delay: 1.5s; /* Appear after beacons have mostly lit */
+}
+
+.beacon {
+  fill: #45b5fc;
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+}
+
+.beacon.lit {
+  animation: beacon-light 1s ease-out forwards;
+}
+
+.beacon:nth-child(2).lit {
+  animation-delay: 0.1s;
+}
+
+.beacon:nth-child(3).lit {
+  animation-delay: 0.2s;
+}
+
+.beacon-text.active {
+  animation: beacon-text-fade-in 0.8s ease-out forwards;
+  animation-delay: 1.5s;
+}
