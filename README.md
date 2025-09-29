@@ -3,7 +3,7 @@ An AWS IaC security scanner for CloudFormation templates.
 
 -----
 
-### Developer Workflow
+### Running instructions
 
 Here are the steps for anyone who clones this repository to get it running on their local machine.
 
@@ -29,18 +29,16 @@ Here are the steps for anyone who clones this repository to get it running on th
     pnpm install
     ```
 
-5.  **Environment Variables:** If your project requires environment variables (like API keys), create a local environment file. It's common practice to have a `.env.example` file in the repository that you can copy.
+5.  **Build the Frontend:**
 
     ```bash
-    cp .env.example .env.local
+    pnpm build
     ```
-
-    Then, fill in the necessary values in your new `.env.local` file.
-
-6.  **Run the Development Server:** Start the Vite development server to view the application in your browser.
+    
+6.  **Run the Development Server:** Start the Flask development server to view the application in your browser.
 
     ```bash
-    pnpm run dev
+    python3 main.py
     ```
 
-    Your terminal will output the local URL where the application is running (usually `http://localhost:5173`).
+    Your terminal will output the local URL where the application is running (usually `http://localhost:8080`).
