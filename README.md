@@ -1,4 +1,5 @@
-# tirith-iac-security-scanner
+# tirith_iac_project: An AWS IaC Security Scanner
+
 An AWS IaC security scanner for CloudFormation templates.
 
 -----
@@ -34,7 +35,7 @@ Here are the steps for anyone who clones this repository to get it running on th
     ```bash
     pnpm build
     ```
-    
+
 6.  **Run the Development Server:** Start the Flask development server to view the application in your browser.
 
     ```bash
